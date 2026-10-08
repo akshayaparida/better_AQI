@@ -8,6 +8,12 @@ from services.route_service import (
     compare_routes_exposure,
     plan_smart_commute,
 )
+from services.alert_service import (
+    AlertSubscription,
+    register_subscriber,
+    check_and_dispatch_alerts,
+    list_subscribers,
+)
 
 app = FastAPI(title="better_AQI API", version="1.0.0")
 
@@ -73,6 +79,27 @@ async def get_smart_commute(
         end_lon=end_lon,
         transit_mode=transit_mode,
     )
+
+
+# Alerts - Subscribe for automated spike notifications
+@app.post("/api/alerts/subscribe")
+async def subscribe_to_alerts(payload: AlertSubscription):
+    return register_subscriber(payload)
+
+
+# Alerts - List current registered subscribers
+@app.get("/api/alerts/subscriptions")
+async def get_active_subscriptions():
+    return list_subscribers()
+
+
+# Alerts - Evaluate and trigger notifications based on live sensor readings (AWS EventBridge cron target)
+@app.get("/api/alerts/check")
+async def trigger_alerts_evaluation(
+    lat: float = Query(28.6139, description="Latitude to check"),
+    lon: float = Query(77.2090, description="Longitude to check"),
+):
+    return await check_and_dispatch_alerts(latitude=lat, longitude=lon)
 
 
 # AWS Lambda adapter
