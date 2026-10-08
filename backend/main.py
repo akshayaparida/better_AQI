@@ -14,6 +14,8 @@ from services.alert_service import (
     check_and_dispatch_alerts,
     list_subscribers,
 )
+from services.stubble_service import get_stubble_burning_status
+from services.indoor_service import IndoorAirRequest, evaluate_indoor_air
 
 app = FastAPI(title="better_AQI API", version="1.0.0")
 
@@ -38,7 +40,7 @@ async def health_check():
     return {"status": "ok", "service": "better_AQI"}
 
 
-# Live AQI telemetry endpoint
+# 1. AQI - Live telemetry endpoint
 @app.get("/api/aqi/live")
 async def get_live_aqi(
     lat: float = Query(28.6139, description="Latitude"),
@@ -47,7 +49,7 @@ async def get_live_aqi(
     return await fetch_live_aqi(latitude=lat, longitude=lon)
 
 
-# School & Student Safety Advisory endpoint
+# 2. School Safety on Bad Days - Operational Advisory endpoint
 @app.get("/api/advisory/school")
 async def get_school_safety_advisory(
     lat: float = Query(28.6139, description="Latitude"),
@@ -57,13 +59,7 @@ async def get_school_safety_advisory(
     return await get_school_advisory(latitude=lat, longitude=lon, school_name=school_name)
 
 
-# Cleanest Commute - Manual Route Comparison
-@app.post("/api/exposure/route")
-async def compare_route_exposure(payload: RouteComparisonRequest):
-    return compare_routes_exposure(payload.routes)
-
-
-# Cleanest Commute - Smart GPS Coordinate Planner (Auto-Samples Live AQI + Polylines)
+# 3. Pollution Exposure - Cleanest Commute Smart Planner
 @app.get("/api/exposure/commute")
 async def get_smart_commute(
     start_lat: float = Query(28.6304, description="Origin Latitude (e.g. Connaught Place)"),
@@ -81,6 +77,24 @@ async def get_smart_commute(
     )
 
 
+# 3b. Pollution Exposure - Manual Route Comparison
+@app.post("/api/exposure/route")
+async def compare_route_exposure(payload: RouteComparisonRequest):
+    return compare_routes_exposure(payload.routes)
+
+
+# 4. Stubble Burning - Active Fire Clusters & Smoke Trajectory Tracker
+@app.get("/api/stubble/hotspots")
+async def get_stubble_hotspots():
+    return await get_stubble_burning_status()
+
+
+# 5. Indoor Air - Infiltration Modeling & HEPA Purifier Runtime Calculator
+@app.post("/api/indoor/estimate")
+async def estimate_indoor_air(payload: IndoorAirRequest):
+    return await evaluate_indoor_air(payload)
+
+
 # Alerts - Subscribe for automated spike notifications
 @app.post("/api/alerts/subscribe")
 async def subscribe_to_alerts(payload: AlertSubscription):
@@ -93,7 +107,7 @@ async def get_active_subscriptions():
     return list_subscribers()
 
 
-# Alerts - Evaluate and trigger notifications based on live sensor readings (AWS EventBridge cron target)
+# Alerts - Evaluate and trigger notifications (AWS EventBridge cron target)
 @app.get("/api/alerts/check")
 async def trigger_alerts_evaluation(
     lat: float = Query(28.6139, description="Latitude to check"),
