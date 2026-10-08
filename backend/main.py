@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 from services.aqi_service import fetch_live_aqi
 from services.advisory_service import get_school_advisory
+from services.route_service import RouteComparisonRequest, compare_routes_exposure
 
 app = FastAPI(title="better_AQI API", version="1.0.0")
 
@@ -44,6 +45,12 @@ async def get_school_safety_advisory(
     school_name: str = Query("Delhi Public School", description="School or campus name"),
 ):
     return await get_school_advisory(latitude=lat, longitude=lon, school_name=school_name)
+
+
+# Cleanest Commute Route Inhalation Comparison endpoint
+@app.post("/api/exposure/route")
+async def compare_route_exposure(payload: RouteComparisonRequest):
+    return compare_routes_exposure(payload.routes)
 
 
 # AWS Lambda adapter
