@@ -1,6 +1,11 @@
-from fastapi import FastAPI, Query
+import time
+from fastapi import FastAPI, Query, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
+import httpx
+
+from config import settings, logger
 from services.aqi_service import fetch_live_aqi
 from services.advisory_service import get_school_advisory
 from services.route_service import (
@@ -17,9 +22,13 @@ from services.alert_service import (
 from services.stubble_service import get_stubble_burning_status
 from services.indoor_service import IndoorAirRequest, evaluate_indoor_air
 
-app = FastAPI(title="better_AQI API", version="1.0.0")
+app = FastAPI(
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION,
+    description="Production-grade hyper-local AQI, cleanest commute planning, and school safety advisory engine",
+)
 
-# Allow frontend requests
+# Cross-Origin Resource Sharing (CORS)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,38 +38,77 @@ app.add_middleware(
 )
 
 
-@app.get("/")
+# Structured Request Logging Middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    duration_ms = round((time.time() - start_time) * 1000, 2)
+    logger.info(
+        f"{request.method} {request.url.path} -> Status: {response.status_code} ({duration_ms}ms)"
+    )
+    return response
+
+
+# Global Exception Handlers
+@app.exception_handler(httpx.HTTPError)
+async def external_api_exception_handler(request: Request, exc: httpx.HTTPError):
+    logger.error(f"External API Failure on {request.url.path}: {str(exc)}")
+    return JSONResponse(
+        status_code=503,
+        content={
+            "error": "EXTERNAL_SERVICE_UNAVAILABLE",
+            "message": "Environmental data provider is temporarily unreachable. Please retry shortly.",
+            "path": request.url.path,
+        },
+    )
+
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled Exception on {request.url.path}: {str(exc)}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "INTERNAL_SERVER_ERROR",
+            "message": "An unexpected error occurred while processing the request.",
+            "path": request.url.path,
+        },
+    )
+
+
+# Root & Cloud Health Check
+@app.get("/", tags=["General"])
 async def root():
-    return {"service": "better_AQI API", "status": "online"}
+    return {"service": settings.APP_NAME, "version": settings.APP_VERSION, "status": "online"}
 
 
-# Cloud health check
-@app.get("/health")
+@app.get("/health", tags=["Health"])
 async def health_check():
-    return {"status": "ok", "service": "better_AQI"}
+    return {"status": "ok", "service": "better_AQI", "version": settings.APP_VERSION}
 
 
 # 1. AQI - Live telemetry endpoint
-@app.get("/api/aqi/live")
+@app.get("/api/aqi/live", tags=["Air Quality"])
 async def get_live_aqi(
-    lat: float = Query(28.6139, description="Latitude"),
-    lon: float = Query(77.2090, description="Longitude"),
+    lat: float = Query(settings.DEFAULT_LATITUDE, description="Latitude"),
+    lon: float = Query(settings.DEFAULT_LONGITUDE, description="Longitude"),
 ):
     return await fetch_live_aqi(latitude=lat, longitude=lon)
 
 
 # 2. School Safety on Bad Days - Operational Advisory endpoint
-@app.get("/api/advisory/school")
+@app.get("/api/advisory/school", tags=["School Advisory"])
 async def get_school_safety_advisory(
-    lat: float = Query(28.6139, description="Latitude"),
-    lon: float = Query(77.2090, description="Longitude"),
+    lat: float = Query(settings.DEFAULT_LATITUDE, description="Latitude"),
+    lon: float = Query(settings.DEFAULT_LONGITUDE, description="Longitude"),
     school_name: str = Query("Delhi Public School", description="School or campus name"),
 ):
     return await get_school_advisory(latitude=lat, longitude=lon, school_name=school_name)
 
 
 # 3. Pollution Exposure - Cleanest Commute Smart Planner
-@app.get("/api/exposure/commute")
+@app.get("/api/exposure/commute", tags=["Commute Planning"])
 async def get_smart_commute(
     start_lat: float = Query(28.6304, description="Origin Latitude (e.g. Connaught Place)"),
     start_lon: float = Query(77.2177, description="Origin Longitude"),
@@ -78,40 +126,40 @@ async def get_smart_commute(
 
 
 # 3b. Pollution Exposure - Manual Route Comparison
-@app.post("/api/exposure/route")
+@app.post("/api/exposure/route", tags=["Commute Planning"])
 async def compare_route_exposure(payload: RouteComparisonRequest):
     return compare_routes_exposure(payload.routes)
 
 
 # 4. Stubble Burning - Active Fire Clusters & Smoke Trajectory Tracker
-@app.get("/api/stubble/hotspots")
+@app.get("/api/stubble/hotspots", tags=["Stubble Burning"])
 async def get_stubble_hotspots():
     return await get_stubble_burning_status()
 
 
 # 5. Indoor Air - Infiltration Modeling & HEPA Purifier Runtime Calculator
-@app.post("/api/indoor/estimate")
+@app.post("/api/indoor/estimate", tags=["Indoor Air"])
 async def estimate_indoor_air(payload: IndoorAirRequest):
     return await evaluate_indoor_air(payload)
 
 
-# Alerts - Subscribe for automated spike notifications
-@app.post("/api/alerts/subscribe")
+# 6. Alerts - Subscribe for automated spike notifications
+@app.post("/api/alerts/subscribe", tags=["Alerts"])
 async def subscribe_to_alerts(payload: AlertSubscription):
     return register_subscriber(payload)
 
 
-# Alerts - List current registered subscribers
-@app.get("/api/alerts/subscriptions")
+# 6b. Alerts - List current registered subscribers
+@app.get("/api/alerts/subscriptions", tags=["Alerts"])
 async def get_active_subscriptions():
     return list_subscribers()
 
 
-# Alerts - Evaluate and trigger notifications (AWS EventBridge cron target)
-@app.get("/api/alerts/check")
+# 6c. Alerts - Evaluate and trigger notifications (AWS EventBridge cron target)
+@app.get("/api/alerts/check", tags=["Alerts"])
 async def trigger_alerts_evaluation(
-    lat: float = Query(28.6139, description="Latitude to check"),
-    lon: float = Query(77.2090, description="Longitude to check"),
+    lat: float = Query(settings.DEFAULT_LATITUDE, description="Latitude to check"),
+    lon: float = Query(settings.DEFAULT_LONGITUDE, description="Longitude to check"),
 ):
     return await check_and_dispatch_alerts(latitude=lat, longitude=lon)
 

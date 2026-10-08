@@ -22,15 +22,15 @@ class AlertSubscription(BaseModel):
     email: str = Field(
         ...,
         pattern=r"^[\w\.-]+@[\w\.-]+\.\w+$",
-        example="principal@school.edu",
+        examples=["principal@school.edu"],
         description="Subscriber email address",
     )
-    phone: Optional[str] = Field(None, example="+919876543210")
-    location_name: str = Field(default="Delhi NCR", example="Rohini, Delhi")
-    latitude: float = Field(default=28.6139, example=28.6139)
-    longitude: float = Field(default=77.2090, example=77.2090)
-    threshold_pm25: float = Field(default=90.0, ge=30.0, example=90.0)
-    alert_type: str = Field(default="spike_alert", example="spike_alert")
+    phone: Optional[str] = Field(None, examples=["+919876543210"])
+    location_name: str = Field(default="Delhi NCR", examples=["Rohini, Delhi"])
+    latitude: float = Field(default=28.6139, examples=[28.6139])
+    longitude: float = Field(default=77.2090, examples=[77.2090])
+    threshold_pm25: float = Field(default=90.0, ge=30.0, examples=[90.0])
+    alert_type: str = Field(default="spike_alert", examples=["spike_alert"])
 
 
 def register_subscriber(sub: AlertSubscription) -> Dict[str, Any]:

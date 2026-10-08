@@ -23,11 +23,11 @@ CIGARETTE_EQUIVALENT_UG = 22.0
 
 
 class RouteOption(BaseModel):
-    name: str = Field(..., example="Route A (Ring Road)")
-    distance_km: float = Field(..., gt=0, example=12.4)
-    duration_minutes: float = Field(..., gt=0, example=28.0)
-    avg_pm25: float = Field(..., ge=0, example=185.0)
-    transit_mode: str = Field(default="two_wheeler", example="two_wheeler")
+    name: str = Field(..., examples=["Route A (Ring Road)"])
+    distance_km: float = Field(..., gt=0, examples=[12.4])
+    duration_minutes: float = Field(..., gt=0, examples=[28.0])
+    avg_pm25: float = Field(..., ge=0, examples=[185.0])
+    transit_mode: str = Field(default="two_wheeler", examples=["two_wheeler"])
 
 
 class RouteComparisonRequest(BaseModel):
@@ -95,22 +95,18 @@ async def plan_smart_commute(
     transit_mode: str = "two_wheeler",
 ) -> Dict[str, Any]:
     """Generates two realistic commute alternatives between coordinates with live air quality sampling and map polylines."""
-    # Approximate straight-line distance in km
     d_lat = (end_lat - start_lat) * 111.0
     d_lon = (end_lon - start_lon) * 96.0
     straight_dist = (d_lat**2 + d_lon**2) ** 0.5
     straight_dist = max(straight_dist, 1.5)
 
-    # Fetch live base AQI for the origin area
     live_origin = await fetch_live_aqi(start_lat, start_lon)
     base_pm25 = live_origin["current"]["pm2_5"]
 
-    # Route 1: Highway / Arterial Corridor (Heavier traffic, high diesel particulate concentration)
     r1_dist = round(straight_dist * 1.25, 1)
-    r1_time = round((r1_dist / 32.0) * 60, 0)  # ~32 km/h avg speed
-    r1_pm25 = round(base_pm25 * 1.35, 1)       # 35% higher due to vehicular exhaust corridors
+    r1_time = round((r1_dist / 32.0) * 60, 0)
+    r1_pm25 = round(base_pm25 * 1.35, 1)
 
-    # Waypoints for Route 1 (bowing outward toward arterial road)
     mid_lat1 = (start_lat + end_lat) / 2 + 0.015
     mid_lon1 = (start_lon + end_lon) / 2 - 0.020
     r1_polyline = [
@@ -119,12 +115,10 @@ async def plan_smart_commute(
         [end_lat, end_lon],
     ]
 
-    # Route 2: Green Belt / Low-Traffic Arterial (Lower exposure, slightly longer distance)
     r2_dist = round(straight_dist * 1.38, 1)
-    r2_time = round((r2_dist / 28.0) * 60, 0)  # ~28 km/h avg speed
-    r2_pm25 = round(base_pm25 * 0.72, 1)       # 28% lower due to canopy & lower diesel traffic
+    r2_time = round((r2_dist / 28.0) * 60, 0)
+    r2_pm25 = round(base_pm25 * 0.72, 1)
 
-    # Waypoints for Route 2 (bowing inward through green corridor)
     mid_lat2 = (start_lat + end_lat) / 2 - 0.012
     mid_lon2 = (start_lon + end_lon) / 2 + 0.018
     r2_polyline = [
@@ -151,14 +145,13 @@ async def plan_smart_commute(
 
     comparison = compare_routes_exposure([route1, route2])
 
-    # Inject polyline coordinates for UI map rendering
     for r in comparison["routes"]:
         if "Highway" in r["name"]:
             r["polyline"] = r1_polyline
-            r["color"] = "#EF4444"  # Red
+            r["color"] = "#EF4444"
         else:
             r["polyline"] = r2_polyline
-            r["color"] = "#10B981"  # Green
+            r["color"] = "#10B981"
 
     return {
         "start": {"latitude": start_lat, "longitude": start_lon},

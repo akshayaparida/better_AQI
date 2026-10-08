@@ -4,17 +4,16 @@ from services.aqi_service import fetch_live_aqi
 
 
 class IndoorAirRequest(BaseModel):
-    latitude: float = Field(default=28.6139, example=28.6139)
-    longitude: float = Field(default=77.2090, example=77.2090)
-    room_area_sqft: float = Field(default=200.0, gt=20.0, example=250.0)
-    ceiling_height_ft: float = Field(default=10.0, gt=6.0, example=10.0)
-    window_sealing: str = Field(default="standard", example="standard", description="poor, standard, or airtight")
-    has_air_purifier: bool = Field(default=True, example=True)
-    purifier_cadr_m3h: float = Field(default=300.0, gt=50.0, example=300.0, description="Clean Air Delivery Rate in m3/hour")
+    latitude: float = Field(default=28.6139, examples=[28.6139])
+    longitude: float = Field(default=77.2090, examples=[77.2090])
+    room_area_sqft: float = Field(default=200.0, gt=20.0, examples=[250.0])
+    ceiling_height_ft: float = Field(default=10.0, gt=6.0, examples=[10.0])
+    window_sealing: str = Field(default="standard", examples=["standard"], description="poor, standard, or airtight")
+    has_air_purifier: bool = Field(default=True, examples=[True])
+    purifier_cadr_m3h: float = Field(default=300.0, gt=50.0, examples=[300.0], description="Clean Air Delivery Rate in m3/hour")
 
 
 def calculate_indoor_air_quality(outdoor_pm25: float, req: IndoorAirRequest) -> Dict[str, Any]:
-    # Infiltration ratios based on architectural sealing quality
     infiltration_map = {
         "airtight": 0.25,
         "standard": 0.55,
@@ -22,12 +21,10 @@ def calculate_indoor_air_quality(outdoor_pm25: float, req: IndoorAirRequest) -> 
     }
     infil_factor = infiltration_map.get(req.window_sealing.lower(), 0.55)
 
-    # Room volume in cubic meters
     area_m2 = req.room_area_sqft * 0.092903
     height_m = req.ceiling_height_ft * 0.3048
     volume_m3 = round(area_m2 * height_m, 1)
 
-    # Baseline indoor PM2.5 without filtration
     unfiltered_indoor_pm25 = round(outdoor_pm25 * infil_factor, 1)
 
     if not req.has_air_purifier:
@@ -40,17 +37,11 @@ def calculate_indoor_air_quality(outdoor_pm25: float, req: IndoorAirRequest) -> 
             "recommendation": "Install a HEPA air purifier or seal door/window gaps to prevent outdoor toxic ingress.",
         }
 
-    # Air Changes per Hour (ACH) by purifier
     ach = round(req.purifier_cadr_m3h / volume_m3, 2)
-
-    # Equilibrium PM2.5 with purifier operating continuously
-    # Standard indoor aerosol decay model: C_eq = C_unfiltered / (1 + ACH/infiltration)
     effective_indoor_pm25 = round(unfiltered_indoor_pm25 / (1.0 + (ach * 0.75)), 1)
 
-    # Time in minutes to clean room down to safe WHO/CPCB level (<= 30 ug/m3)
     minutes_to_clean = 0
     if unfiltered_indoor_pm25 > 30:
-        # Exponential particulate clearance rate: t = (ln(C0 / C_target) / ACH) * 60
         target = 30.0
         decay_constant = max(ach, 1.0)
         import math
@@ -87,7 +78,6 @@ def calculate_indoor_air_quality(outdoor_pm25: float, req: IndoorAirRequest) -> 
 
 
 async def evaluate_indoor_air(req: IndoorAirRequest) -> Dict[str, Any]:
-    """Fetch live outdoor AQI and evaluate indoor air quality and purifier runtime."""
     live = await fetch_live_aqi(req.latitude, req.longitude)
     outdoor_pm25 = live["current"]["pm2_5"]
     return calculate_indoor_air_quality(outdoor_pm25, req)

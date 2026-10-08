@@ -1,9 +1,9 @@
 import httpx
 from typing import Dict, Any, List
+from config import settings, logger
 
-OPEN_METEO_WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
+OPEN_METEO_WEATHER_URL = settings.OPEN_METEO_WEATHER_URL
 
-# Representative active agricultural burning districts across Punjab and Haryana
 ACTIVE_FIRE_CLUSTERS = [
     {"district": "Sangrur, Punjab", "latitude": 30.2458, "longitude": 75.8421, "active_fires": 142, "intensity": "High"},
     {"district": "Bathinda, Punjab", "latitude": 30.2110, "longitude": 74.9455, "active_fires": 118, "intensity": "High"},
@@ -15,17 +15,21 @@ ACTIVE_FIRE_CLUSTERS = [
 
 
 async def fetch_wind_vector(latitude: float = 28.6139, longitude: float = 77.2090) -> Dict[str, Any]:
-    """Fetch live wind speed and wind direction for Delhi NCR to calculate stubble smoke transport."""
+    """Fetch live wind speed and wind direction with fallback resilience."""
     params = {
         "latitude": latitude,
         "longitude": longitude,
         "current": ["wind_speed_10m", "wind_direction_10m"],
         "timezone": "auto",
     }
-    async with httpx.AsyncClient(timeout=5.0) as client:
-        res = await client.get(OPEN_METEO_WEATHER_URL, params=params)
-        res.raise_for_status()
-        data = res.json()
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            res = await client.get(OPEN_METEO_WEATHER_URL, params=params)
+            res.raise_for_status()
+            data = res.json()
+    except httpx.HTTPError as exc:
+        logger.warning(f"External wind API failed ({exc}). Using seasonal default wind vector.")
+        data = {"current": {"wind_speed_10m": 12.0, "wind_direction_10m": 310}}
 
     current = data.get("current", {})
     return {
@@ -36,7 +40,6 @@ async def fetch_wind_vector(latitude: float = 28.6139, longitude: float = 77.209
 
 def analyze_smoke_trajectory(wind_deg: float, wind_speed: float, total_fires: int) -> Dict[str, Any]:
     """Determine if wind carries North-Western stubble smoke into NCR."""
-    # North-Westerly winds (approx 290 deg to 340 deg) blow directly from Punjab toward Delhi
     is_north_westerly = 285.0 <= wind_deg <= 345.0
 
     if is_north_westerly and wind_speed > 6.0:
