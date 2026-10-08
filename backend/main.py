@@ -3,7 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 from services.aqi_service import fetch_live_aqi
 from services.advisory_service import get_school_advisory
-from services.route_service import RouteComparisonRequest, compare_routes_exposure
+from services.route_service import (
+    RouteComparisonRequest,
+    compare_routes_exposure,
+    plan_smart_commute,
+)
 
 app = FastAPI(title="better_AQI API", version="1.0.0")
 
@@ -47,10 +51,28 @@ async def get_school_safety_advisory(
     return await get_school_advisory(latitude=lat, longitude=lon, school_name=school_name)
 
 
-# Cleanest Commute Route Inhalation Comparison endpoint
+# Cleanest Commute - Manual Route Comparison
 @app.post("/api/exposure/route")
 async def compare_route_exposure(payload: RouteComparisonRequest):
     return compare_routes_exposure(payload.routes)
+
+
+# Cleanest Commute - Smart GPS Coordinate Planner (Auto-Samples Live AQI + Polylines)
+@app.get("/api/exposure/commute")
+async def get_smart_commute(
+    start_lat: float = Query(28.6304, description="Origin Latitude (e.g. Connaught Place)"),
+    start_lon: float = Query(77.2177, description="Origin Longitude"),
+    end_lat: float = Query(28.7499, description="Destination Latitude (e.g. DTU Delhi)"),
+    end_lon: float = Query(77.1170, description="Destination Longitude"),
+    transit_mode: str = Query("two_wheeler", description="Mode: walking, cycling, two_wheeler, car_ac, bus"),
+):
+    return await plan_smart_commute(
+        start_lat=start_lat,
+        start_lon=start_lon,
+        end_lat=end_lat,
+        end_lon=end_lon,
+        transit_mode=transit_mode,
+    )
 
 
 # AWS Lambda adapter
