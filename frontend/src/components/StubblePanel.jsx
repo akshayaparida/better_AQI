@@ -1,5 +1,4 @@
-import React from 'react';
-import { Flame, Compass, Wind, AlertCircle } from 'lucide-react';
+import { Flame, AlertCircle } from 'lucide-react';
 
 export default function StubblePanel({ stubbleData }) {
   if (!stubbleData?.summary) return null;

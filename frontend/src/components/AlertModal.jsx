@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Bell, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { X, Bell, CheckCircle2 } from 'lucide-react';
 
 export default function AlertModal({ isOpen, onClose }) {
   const [email, setEmail] = useState('');
@@ -35,7 +35,7 @@ export default function AlertModal({ isOpen, onClose }) {
       } else {
         setStatus({ success: false, message: 'Failed to subscribe. Please verify your email.' });
       }
-    } catch (err) {
+    } catch {
       setStatus({ success: false, message: 'Server communication error.' });
     } finally {
       setLoading(false);
@@ -64,6 +64,7 @@ export default function AlertModal({ isOpen, onClose }) {
         {/* Close Button */}
         <button
           onClick={onClose}
+          aria-label="Close Modal"
           style={{
             position: 'absolute',
             top: '18px',

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Navigation, Bike, Car, Footprints, ShieldCheck, Clock, Zap } from 'lucide-react';
 
 export default function CommuteWidget({ commuteData, onModeChange, selectedMode = 'two_wheeler' }) {
@@ -11,8 +11,6 @@ export default function CommuteWidget({ commuteData, onModeChange, selectedMode 
 
   const analysis = commuteData?.analysis;
   const routes = analysis?.routes || [];
-  const cleanest = routes[0];
-  const dirtiest = routes[routes.length - 1];
 
   return (
     <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>

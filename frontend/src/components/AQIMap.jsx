@@ -1,8 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 
+const DEFAULT_CENTER = [28.6139, 77.2090];
+
 export default function AQIMap({
-  center = [28.6139, 77.2090],
+  center = DEFAULT_CENTER,
   aqiData,
   stubbleData,
   commuteData,
@@ -11,6 +13,7 @@ export default function AQIMap({
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const layersGroupRef = useRef(null);
+  const initialCenterRef = useRef(center);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -18,7 +21,7 @@ export default function AQIMap({
     if (!mapInstanceRef.current) {
       // Initialize map instance
       const map = L.map(mapContainerRef.current, {
-        center: center,
+        center: initialCenterRef.current,
         zoom: 10,
         zoomControl: false,
       });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, AlertTriangle, Fan, Sun, Users } from 'lucide-react';
+import { Shield, AlertTriangle, Sun } from 'lucide-react';
 
 export default function SchoolAdvisoryCard({ advisoryData }) {
   if (!advisoryData?.advisory) return null;

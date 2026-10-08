@@ -1,40 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Fan, Timer, CheckCircle2 } from 'lucide-react';
+import { Home, Timer } from 'lucide-react';
 
 export default function IndoorPurifierCard() {
   const [areaSqft, setAreaSqft] = useState(240);
   const [cadr, setCadr] = useState(320);
   const [sealing, setSealing] = useState('standard');
   const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  const calculateIndoor = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/indoor/estimate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          room_area_sqft: Number(areaSqft),
-          ceiling_height_ft: 10.0,
-          window_sealing: sealing,
-          has_air_purifier: true,
-          purifier_cadr_m3h: Number(cadr),
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setResult(data);
-      }
-    } catch (err) {
-      console.error('Failed to calculate indoor air quality', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-    calculateIndoor();
+    let ignore = false;
+    async function fetchIndoor() {
+      try {
+        const res = await fetch('/api/indoor/estimate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            room_area_sqft: Number(areaSqft),
+            ceiling_height_ft: 10.0,
+            window_sealing: sealing,
+            has_air_purifier: true,
+            purifier_cadr_m3h: Number(cadr),
+          }),
+        });
+        if (res.ok && !ignore) {
+          const data = await res.json();
+          setResult(data);
+        }
+      } catch (err) {
+        console.error('Failed to calculate indoor air quality', err);
+      }
+    }
+
+    fetchIndoor();
+    return () => {
+      ignore = true;
+    };
   }, [areaSqft, cadr, sealing]);
 
   return (

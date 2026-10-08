@@ -6,7 +6,7 @@ import SchoolAdvisoryCard from './components/SchoolAdvisoryCard';
 import IndoorPurifierCard from './components/IndoorPurifierCard';
 import StubblePanel from './components/StubblePanel';
 import AlertModal from './components/AlertModal';
-import { Wind, Activity, Gauge, CloudRain, Thermometer, ShieldAlert } from 'lucide-react';
+import { Gauge } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -18,12 +18,10 @@ export default function App() {
   const [commuteData, setCommuteData] = useState(null);
   const [schoolData, setSchoolData] = useState(null);
   const [stubbleData, setStubbleData] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   // Fetch all initial data from backend
   useEffect(() => {
     async function loadInitialData() {
-      setLoading(true);
       try {
         const [aqiRes, schoolRes, stubbleRes] = await Promise.all([
           fetch('/api/aqi/live'),
@@ -36,8 +34,6 @@ export default function App() {
         if (stubbleRes.ok) setStubbleData(await stubbleRes.json());
       } catch (err) {
         console.error('Error fetching backend telemetry:', err);
-      } finally {
-        setLoading(false);
       }
     }
     loadInitialData();
