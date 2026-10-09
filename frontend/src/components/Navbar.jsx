@@ -42,18 +42,6 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAlertModal }) {
             <span style={{ fontSize: '1.25rem', fontWeight: '800', fontFamily: 'var(--font-heading)', letterSpacing: '-0.02em' }}>
               better_<span style={{ color: '#10B981' }}>AQI</span>
             </span>
-            <span style={{
-              fontSize: '0.65rem',
-              fontWeight: '700',
-              padding: '2px 6px',
-              borderRadius: '4px',
-              background: 'rgba(16, 185, 129, 0.15)',
-              color: '#10B981',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
-              textTransform: 'uppercase',
-            }}>
-              AWS Tour
-            </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
             <span className="pulse-live"></span>
