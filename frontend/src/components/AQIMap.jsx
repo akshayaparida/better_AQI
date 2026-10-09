@@ -26,11 +26,22 @@ export default function AQIMap({
         zoomControl: false,
       });
 
-      // Dark CartoDB map tiles
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-        maxZoom: 19,
-      }).addTo(map);
+      // Watermark-free, zero API key Dark Canvas basemap (Esri World Dark Gray)
+      L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+        {
+          attribution: '&copy; Esri & OpenStreetMap contributors',
+          maxZoom: 16,
+        }
+      ).addTo(map);
+
+      // Road and city labels overlay
+      L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+        {
+          maxZoom: 16,
+        }
+      ).addTo(map);
 
       L.control.zoom({ position: 'bottomright' }).addTo(map);
 
