@@ -1,0 +1,76 @@
+export const POPULAR_WORLD_CITIES = [
+  { id: 'delhi', name: 'Delhi NCR', country: 'India', flag: '🇮🇳', lat: 28.6139, lon: 77.2090 },
+  { id: 'mumbai', name: 'Mumbai', country: 'India', flag: '🇮🇳', lat: 19.0760, lon: 72.8777 },
+  { id: 'bengaluru', name: 'Bengaluru', country: 'India', flag: '🇮🇳', lat: 12.9716, lon: 77.5946 },
+  { id: 'london', name: 'London', country: 'United Kingdom', flag: '🇬🇧', lat: 51.5074, lon: -0.1278 },
+  { id: 'new_york', name: 'New York City', country: 'United States', flag: '🇺🇸', lat: 40.7128, lon: -74.0060 },
+  { id: 'tokyo', name: 'Tokyo', country: 'Japan', flag: '🇯🇵', lat: 35.6762, lon: 139.6503 },
+  { id: 'paris', name: 'Paris', country: 'France', flag: '🇫🇷', lat: 48.8566, lon: 2.3522 },
+  { id: 'dubai', name: 'Dubai', country: 'UAE', flag: '🇦🇪', lat: 25.2048, lon: 55.2708 },
+  { id: 'berlin', name: 'Berlin', country: 'Germany', flag: '🇩🇪', lat: 52.5200, lon: 13.4050 },
+];
+
+export const POPULAR_HUBS = [
+  { id: 'connaught_place', name: 'Connaught Place (Central Delhi)', lat: 28.6304, lon: 77.2177 },
+  { id: 'dtu_campus', name: 'DTU Campus (North Delhi)', lat: 28.7499, lon: 77.1170 },
+  { id: 'cyber_hub', name: 'DLF Cyber Hub (Gurugram)', lat: 28.4986, lon: 77.0878 },
+  { id: 'noida_sec62', name: 'Sector 62 (Noida / UP)', lat: 28.6280, lon: 77.3649 },
+  { id: 'india_gate', name: 'India Gate (Central Vista)', lat: 28.6129, lon: 77.2295 },
+  { id: 'igi_airport', name: 'IGI Airport T3 (South-West)', lat: 28.5562, lon: 77.1000 },
+  { id: 'dwarka_sec21', name: 'Dwarka Sector 21 (West Delhi)', lat: 28.5523, lon: 77.0583 },
+  { id: 'anand_vihar', name: 'Anand Vihar ISBT (East Delhi)', lat: 28.6469, lon: 77.3160 },
+];
+
+export const GLOBAL_CITY_HUBS = {
+  delhi: POPULAR_HUBS,
+  mumbai: [
+    { id: 'nariman_pt', name: 'Nariman Point (South Mumbai)', lat: 18.9256, lon: 72.8242 },
+    { id: 'bkc', name: 'Bandra Kurla Complex (BKC)', lat: 19.0607, lon: 72.8685 },
+    { id: 'andheri_w', name: 'Andheri West Commercial Hub', lat: 19.1197, lon: 72.8468 },
+    { id: 'powai', name: 'Powai IIT / Hiranandani', lat: 19.1176, lon: 72.9060 },
+    { id: 'cst_term', name: 'CSMT Railway Terminus', lat: 18.9400, lon: 72.8353 },
+  ],
+  bengaluru: [
+    { id: 'mg_road', name: 'MG Road Central Metro', lat: 12.9756, lon: 77.6066 },
+    { id: 'whitefield', name: 'ITPL Tech Park Whitefield', lat: 12.9863, lon: 77.7314 },
+    { id: 'koramangala', name: 'Koramangala Startup Hub', lat: 12.9352, lon: 77.6245 },
+    { id: 'electronic_city', name: 'Electronic City Phase 1', lat: 12.8452, lon: 77.6602 },
+  ],
+  london: [
+    { id: 'westminster', name: 'Westminster / Big Ben', lat: 51.4995, lon: -0.1248 },
+    { id: 'canary_wharf', name: 'Canary Wharf Financial District', lat: 51.5054, lon: -0.0209 },
+    { id: 'hyde_park', name: 'Hyde Park Corner', lat: 51.5033, lon: -0.1517 },
+    { id: 'city_london', name: 'City of London / Bank', lat: 51.5133, lon: -0.0890 },
+    { id: 'heathrow', name: 'Heathrow Airport T5', lat: 51.4700, lon: -0.4543 },
+  ],
+  new_york: [
+    { id: 'times_square', name: 'Times Square (Midtown Manhattan)', lat: 40.7580, lon: -73.9855 },
+    { id: 'wall_street', name: 'Wall Street / Financial District', lat: 40.7074, lon: -74.0089 },
+    { id: 'central_park', name: 'Central Park South', lat: 40.7661, lon: -73.9772 },
+    { id: 'brooklyn_dumbo', name: 'DUMBO Brooklyn Waterfront', lat: 40.7033, lon: -73.9881 },
+    { id: 'jfk_airport', name: 'JFK International Airport', lat: 40.6413, lon: -73.7781 },
+  ],
+  tokyo: [
+    { id: 'shibuya', name: 'Shibuya Crossing', lat: 35.6595, lon: 139.7004 },
+    { id: 'shinjuku', name: 'Shinjuku Station Terminal', lat: 35.6909, lon: 139.7003 },
+    { id: 'ginza', name: 'Ginza Central District', lat: 35.6719, lon: 139.7640 },
+    { id: 'roppongi', name: 'Roppongi Hills', lat: 35.6628, lon: 139.7314 },
+  ],
+  paris: [
+    { id: 'eiffel', name: 'Eiffel Tower / Champ de Mars', lat: 48.8584, lon: 2.2945 },
+    { id: 'defense', name: 'La Défense Business Quarter', lat: 48.8912, lon: 2.2415 },
+    { id: 'louvre', name: 'Louvre Museum / Rivoli', lat: 48.8606, lon: 2.3376 },
+    { id: 'champs_elysees', name: 'Avenue des Champs-Élysées', lat: 48.8698, lon: 2.3075 },
+  ],
+  dubai: [
+    { id: 'burj_khalifa', name: 'Downtown Dubai / Burj Khalifa', lat: 25.1972, lon: 55.2744 },
+    { id: 'dubai_marina', name: 'Dubai Marina Walk', lat: 25.0805, lon: 55.1403 },
+    { id: 'difc', name: 'DIFC Financial District', lat: 25.2110, lon: 55.2797 },
+    { id: 'palm_jumeirah', name: 'Palm Jumeirah Crescent', lat: 25.1124, lon: 55.1390 },
+  ],
+  berlin: [
+    { id: 'alexanderplatz', name: 'Alexanderplatz / TV Tower', lat: 52.5219, lon: 13.4132 },
+    { id: 'brandenburg', name: 'Brandenburg Gate / Mitte', lat: 52.5163, lon: 13.3777 },
+    { id: 'potsdamer', name: 'Potsdamer Platz', lat: 52.5096, lon: 13.3765 },
+  ],
+};

@@ -1,7 +1,18 @@
 import React from 'react';
-import { Navigation, Bike, Car, Footprints, ShieldCheck, Clock, Zap } from 'lucide-react';
+import { Navigation, Bike, Car, Footprints, ShieldCheck, Clock, Zap, ArrowLeftRight } from 'lucide-react';
 
-export default function CommuteWidget({ commuteData, onModeChange, selectedMode = 'two_wheeler' }) {
+import { POPULAR_HUBS } from '../data/locations';
+
+export default function CommuteWidget({
+  commuteData,
+  onModeChange,
+  selectedMode = 'two_wheeler',
+  originId = 'connaught_place',
+  destinationId = 'dtu_campus',
+  onEndpointsChange,
+  userLocation = null,
+  availableHubs = POPULAR_HUBS,
+}) {
   const modes = [
     { id: 'cycling', label: 'Bicycle', icon: Bike },
     { id: 'two_wheeler', label: 'Two-Wheeler / Auto', icon: Zap },
@@ -11,19 +22,54 @@ export default function CommuteWidget({ commuteData, onModeChange, selectedMode 
 
   const analysis = commuteData?.analysis;
   const routes = analysis?.routes || [];
+  const hubs = availableHubs && availableHubs.length > 0 ? availableHubs : POPULAR_HUBS;
+
+  const originName = originId === 'current_location'
+    ? '📍 My Current Location'
+    : (hubs.find((h) => h.id === originId)?.name || originId);
+
+  const destinationName = hubs.find((h) => h.id === destinationId)?.name || destinationId;
+
+  const handleSwap = () => {
+    if (onEndpointsChange) {
+      const fallbackOrigin = hubs[0]?.id || 'connaught_place';
+      onEndpointsChange({
+        originId: destinationId,
+        destinationId: originId === 'current_location' ? fallbackOrigin : originId,
+      });
+    }
+  };
+
+  const handleOriginChange = (e) => {
+    if (onEndpointsChange) {
+      onEndpointsChange({
+        originId: e.target.value,
+        destinationId,
+      });
+    }
+  };
+
+  const handleDestinationChange = (e) => {
+    if (onEndpointsChange) {
+      onEndpointsChange({
+        originId,
+        destinationId: e.target.value,
+      });
+    }
+  };
 
   return (
     <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Title */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{ padding: '8px', background: 'rgba(16, 185, 129, 0.15)', borderRadius: '8px', color: '#10B981' }}>
             <Navigation size={20} />
           </div>
           <div>
             <h3 style={{ fontSize: '1.1rem', margin: 0 }}>Cleanest Commute Planner</h3>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
-              Connaught Place ➔ DTU Campus Delhi
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
+              {originName} ➔ {destinationName}
             </p>
           </div>
         </div>
@@ -40,6 +86,107 @@ export default function CommuteWidget({ commuteData, onModeChange, selectedMode 
             -{analysis.percent_inhalation_reduction}% Toxic Inhalation
           </span>
         )}
+      </div>
+
+      {/* Origin & Destination Route Selector */}
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.02)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 'var(--radius-md)',
+        padding: '14px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '600' }}>
+            Origin & Destination Points
+          </span>
+          <button
+            type="button"
+            id="btn-swap-endpoints"
+            onClick={handleSwap}
+            aria-label="Swap Origin and Destination"
+            className="btn-secondary"
+            style={{
+              padding: '4px 10px',
+              fontSize: '0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <ArrowLeftRight size={13} />
+            <span>Swap</span>
+          </button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div>
+            <label
+              htmlFor="commute-origin-select"
+              style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}
+            >
+              Start Origin:
+            </label>
+            <select
+              id="commute-origin-select"
+              value={originId}
+              onChange={handleOriginChange}
+              style={{
+                width: '100%',
+                background: 'rgba(15, 23, 42, 0.8)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                padding: '8px 10px',
+                fontSize: '0.8rem',
+                outline: 'none',
+              }}
+            >
+              {userLocation && (
+                <option value="current_location">
+                  📍 My Current Location ({userLocation.lat.toFixed(3)}, {userLocation.lon.toFixed(3)})
+                </option>
+              )}
+              {hubs.map((hub) => (
+                <option key={hub.id} value={hub.id}>
+                  {hub.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label
+              htmlFor="commute-destination-select"
+              style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}
+            >
+              Target Destination:
+            </label>
+            <select
+              id="commute-destination-select"
+              value={destinationId}
+              onChange={handleDestinationChange}
+              style={{
+                width: '100%',
+                background: 'rgba(15, 23, 42, 0.8)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                padding: '8px 10px',
+                fontSize: '0.8rem',
+                outline: 'none',
+              }}
+            >
+              {hubs.map((hub) => (
+                <option key={hub.id} value={hub.id}>
+                  {hub.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* Transit Mode Selector */}

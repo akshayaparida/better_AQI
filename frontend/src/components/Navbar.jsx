@@ -1,7 +1,14 @@
 import React from 'react';
-import { Wind, Bell, Shield, Navigation, Home, Flame } from 'lucide-react';
+import { Wind, Bell, Shield, Navigation, Home, Flame, LocateFixed, Loader2 } from 'lucide-react';
 
-export default function Navbar({ activeTab, setActiveTab, onOpenAlertModal }) {
+export default function Navbar({
+  activeTab,
+  setActiveTab,
+  onOpenAlertModal,
+  userLocation,
+  isDetectingLocation,
+  onDetectLocation,
+}) {
   const tabs = [
     { id: 'overview', label: 'Live AQI & Map', icon: Wind },
     { id: 'commute', label: 'Cleanest Commute', icon: Navigation },
@@ -74,16 +81,51 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAlertModal }) {
         })}
       </nav>
 
-      {/* Cloud Alert Button */}
-      <button
-        onClick={onOpenAlertModal}
-        className="btn-primary"
-        id="btn-open-alerts"
-        style={{ padding: '8px 16px', fontSize: '0.85rem' }}
-      >
-        <Bell size={16} />
-        <span>Spike Alerts</span>
-      </button>
+      {/* Action Controls: GPS Detection + Spike Alerts */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <button
+          type="button"
+          onClick={onDetectLocation}
+          disabled={isDetectingLocation}
+          id="btn-detect-location"
+          className="btn-secondary"
+          title={userLocation ? `GPS: ${userLocation.lat.toFixed(4)}, ${userLocation.lon.toFixed(4)}` : "Detect GPS Current Location"}
+          style={{
+            padding: '8px 14px',
+            fontSize: '0.85rem',
+            border: userLocation ? '1px solid rgba(16, 185, 129, 0.5)' : undefined,
+            color: userLocation ? '#10B981' : undefined,
+          }}
+        >
+          {isDetectingLocation ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              <span>Detecting...</span>
+            </>
+          ) : userLocation ? (
+            <>
+              <LocateFixed size={16} color="#10B981" />
+              <span>GPS Active</span>
+            </>
+          ) : (
+            <>
+              <LocateFixed size={16} />
+              <span>Detect Location</span>
+            </>
+          )}
+        </button>
+
+        {/* Cloud Alert Button */}
+        <button
+          onClick={onOpenAlertModal}
+          className="btn-primary"
+          id="btn-open-alerts"
+          style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+        >
+          <Bell size={16} />
+          <span>Spike Alerts</span>
+        </button>
+      </div>
     </header>
   );
 }

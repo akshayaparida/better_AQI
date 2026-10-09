@@ -80,6 +80,30 @@ async def test_smart_commute_planner():
 
 
 @pytest.mark.anyio
+async def test_custom_origin_destination_commute():
+    """Verify Cleanest Commute between arbitrary coordinates (Cyber Hub Gurugram to Noida Sec 62)."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get(
+            "/api/exposure/commute?start_lat=28.4986&start_lon=77.0878&end_lat=28.6280&end_lon=77.3649&transit_mode=car_ac"
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "analysis" in data
+        assert "recommended_route" in data["analysis"]
+        routes = data["analysis"]["routes"]
+        assert len(routes) == 2
+        # Verify both routes have realistic distance and duration
+        for route in routes:
+            assert route["distance_km"] > 0
+            assert route["duration_minutes"] > 0
+            assert route["inhaled_pm25_micrograms"] >= 0
+            assert len(route["polyline"]) >= 2
+            # Verify coordinates start at Cyber Hub and end in Noida
+            assert abs(route["polyline"][0][0] - 28.4986) < 0.05
+            assert abs(route["polyline"][-1][0] - 28.6280) < 0.05
+
+
+@pytest.mark.anyio
 async def test_stubble_burning_tracker():
     """Verify agricultural fire hotspots and wind smoke trajectory."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -144,4 +168,34 @@ async def test_security_headers_and_caching():
         assert resp.headers.get("x-frame-options") == "DENY"
         assert resp.headers.get("x-xss-protection") == "1; mode=block"
         assert "max-age=120" in resp.headers.get("cache-control", "")
+
+
+@pytest.mark.anyio
+async def test_global_geocoding_search():
+    """Verify worldwide city search endpoint returns coordinates and country."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/api/geo/search?q=Tokyo")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["query"] == "Tokyo"
+        assert "results" in data
+
+
+@pytest.mark.anyio
+async def test_worldwide_cities_aqi():
+    """Verify live planetary air quality retrieval across multiple global cities."""
+    global_coords = [
+        {"city": "London", "lat": 51.5074, "lon": -0.1278},
+        {"city": "Tokyo", "lat": 35.6762, "lon": 139.6503},
+        {"city": "New York", "lat": 40.7128, "lon": -74.0060},
+    ]
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        for loc in global_coords:
+            resp = await client.get(f"/api/aqi/live?lat={loc['lat']}&lon={loc['lon']}")
+            assert resp.status_code == 200
+            data = resp.json()
+            assert "current" in data
+            assert "pm2_5" in data["current"]
+            assert "cpcb_category" in data["current"]
+
 

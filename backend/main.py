@@ -103,6 +103,38 @@ async def health_check():
     return {"status": "ok", "service": "better_AQI", "version": settings.APP_VERSION}
 
 
+# 0. Global City & Location Geocoding Search
+@app.get("/api/geo/search", tags=["Global Geocoding"])
+async def search_global_cities(
+    q: str = Query(..., min_length=2, description="City or location name to search worldwide"),
+):
+    """Search any city or location globally using Open-Meteo Geocoding API with fallback resilience."""
+    try:
+        async with httpx.AsyncClient(timeout=6.0) as client:
+            resp = await client.get(
+                "https://geocoding-api.open-meteo.com/v1/search",
+                params={"name": q, "count": 6, "language": "en", "format": "json"},
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                raw_results = data.get("results", [])
+                results = [
+                    {
+                        "name": r.get("name"),
+                        "country": r.get("country", ""),
+                        "admin1": r.get("admin1", ""),
+                        "lat": r.get("latitude"),
+                        "lon": r.get("longitude"),
+                    }
+                    for r in raw_results
+                ]
+                return {"query": q, "results": results}
+    except Exception as exc:
+        logger.warning(f"Geocoding lookup error for '{q}': {exc}")
+
+    return {"query": q, "results": []}
+
+
 # 1. AQI - Live telemetry endpoint
 @app.get("/api/aqi/live", tags=["Air Quality"])
 async def get_live_aqi(

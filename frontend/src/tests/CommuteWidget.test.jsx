@@ -57,4 +57,65 @@ describe('CommuteWidget Component', () => {
     expect(handleModeChange).toHaveBeenCalledTimes(1);
     expect(handleModeChange).toHaveBeenCalledWith('car_ac');
   });
+
+  it('renders origin and destination selectors and triggers onEndpointsChange', () => {
+    const handleEndpointsChange = vi.fn();
+    render(
+      <CommuteWidget
+        commuteData={mockCommuteData}
+        onModeChange={vi.fn()}
+        originId="connaught_place"
+        destinationId="dtu_campus"
+        onEndpointsChange={handleEndpointsChange}
+      />
+    );
+
+    const originSelect = screen.getByLabelText('Start Origin:');
+    const destinationSelect = screen.getByLabelText('Target Destination:');
+
+    expect(originSelect).toBeInTheDocument();
+    expect(destinationSelect).toBeInTheDocument();
+    expect(originSelect.value).toBe('connaught_place');
+    expect(destinationSelect.value).toBe('dtu_campus');
+
+    // Change destination to Cyber Hub
+    fireEvent.change(destinationSelect, { target: { value: 'cyber_hub' } });
+    expect(handleEndpointsChange).toHaveBeenCalledWith({
+      originId: 'connaught_place',
+      destinationId: 'cyber_hub',
+    });
+  });
+
+  it('swaps origin and destination when swap button is clicked', () => {
+    const handleEndpointsChange = vi.fn();
+    render(
+      <CommuteWidget
+        commuteData={mockCommuteData}
+        onModeChange={vi.fn()}
+        originId="connaught_place"
+        destinationId="dtu_campus"
+        onEndpointsChange={handleEndpointsChange}
+      />
+    );
+
+    const swapButton = screen.getByRole('button', { name: /swap origin and destination/i });
+    fireEvent.click(swapButton);
+
+    expect(handleEndpointsChange).toHaveBeenCalledWith({
+      originId: 'dtu_campus',
+      destinationId: 'connaught_place',
+    });
+  });
+
+  it('renders My Current Location option when userLocation is present', () => {
+    render(
+      <CommuteWidget
+        commuteData={mockCommuteData}
+        onModeChange={vi.fn()}
+        userLocation={{ lat: 28.5355, lon: 77.3910, name: 'My Current Location' }}
+      />
+    );
+
+    expect(screen.getByText(/📍 My Current Location \(28.535, 77.391\)/i)).toBeInTheDocument();
+  });
 });

@@ -9,6 +9,7 @@ export default function AQIMap({
   stubbleData,
   commuteData,
   selectedLayer = 'all',
+  userLocation = null,
 }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -58,6 +59,22 @@ export default function AQIMap({
     };
   }, []);
 
+  // Smoothly pan to userLocation when detected
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (map && userLocation?.lat && userLocation?.lon) {
+      map.flyTo([userLocation.lat, userLocation.lon], 12, { duration: 1.2 });
+    }
+  }, [userLocation]);
+
+  // Smoothly fly to active city center when it changes
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (map && center && (!userLocation || selectedLayer !== 'commute')) {
+      map.flyTo(center, 11, { duration: 1.4 });
+    }
+  }, [center, userLocation, selectedLayer]);
+
   // Update markers and polylines whenever data changes
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -87,7 +104,34 @@ export default function AQIMap({
       group.addLayer(circle);
     }
 
-    // 2. Draw Stubble Burning Clusters (Punjab / Haryana)
+    // 2. Draw User Current GPS Location Marker & Glow
+    if (userLocation?.lat && userLocation?.lon) {
+      const pulseRing = L.circle([userLocation.lat, userLocation.lon], {
+        color: '#3B82F6',
+        fillColor: '#3B82F6',
+        fillOpacity: 0.15,
+        radius: 1200,
+        weight: 1,
+      });
+      group.addLayer(pulseRing);
+
+      const userMarker = L.circleMarker([userLocation.lat, userLocation.lon], {
+        radius: 9,
+        color: '#FFFFFF',
+        fillColor: '#3B82F6',
+        fillOpacity: 1.0,
+        weight: 3,
+      }).bindPopup(`
+        <div style="padding: 4px; font-family: sans-serif;">
+          <h4 style="margin: 0; color: #3B82F6;">📍 Your Current Location</h4>
+          <p style="margin: 4px 0 0 0; font-size: 13px;">Coordinates: ${userLocation.lat.toFixed(4)}, ${userLocation.lon.toFixed(4)}</p>
+          <p style="margin: 2px 0 0 0; font-size: 11px; color: #9CA3AF;">Hyper-local GPS Sensor Positioning</p>
+        </div>
+      `);
+      group.addLayer(userMarker);
+    }
+
+    // 3. Draw Stubble Burning Clusters (Punjab / Haryana)
     if (stubbleData?.hotspot_clusters && (selectedLayer === 'all' || selectedLayer === 'stubble')) {
       stubbleData.hotspot_clusters.forEach((cluster) => {
         const fireMarker = L.circleMarker([cluster.latitude, cluster.longitude], {
@@ -108,7 +152,7 @@ export default function AQIMap({
       });
     }
 
-    // 3. Draw Cleanest Commute Polylines
+    // 4. Draw Cleanest Commute Polylines & Origin/Destination Markers
     if (commuteData?.analysis?.routes && (selectedLayer === 'all' || selectedLayer === 'commute')) {
       const bounds = [];
       commuteData.analysis.routes.forEach((route) => {
@@ -130,11 +174,36 @@ export default function AQIMap({
         }
       });
 
+      // Add Start and End Pins for the commute route
+      const firstRoute = commuteData.analysis.routes[0];
+      if (firstRoute?.polyline && firstRoute.polyline.length >= 2) {
+        const startCoord = firstRoute.polyline[0];
+        const endCoord = firstRoute.polyline[firstRoute.polyline.length - 1];
+
+        const startPin = L.circleMarker(startCoord, {
+          radius: 8,
+          color: '#FFFFFF',
+          fillColor: '#10B981',
+          fillOpacity: 1,
+          weight: 2,
+        }).bindPopup('<div style="font-family:sans-serif;font-size:12px;"><b>🟢 Origin Point</b></div>');
+        group.addLayer(startPin);
+
+        const endPin = L.circleMarker(endCoord, {
+          radius: 8,
+          color: '#FFFFFF',
+          fillColor: '#6366F1',
+          fillOpacity: 1,
+          weight: 2,
+        }).bindPopup('<div style="font-family:sans-serif;font-size:12px;"><b>🎯 Target Destination</b></div>');
+        group.addLayer(endPin);
+      }
+
       if (bounds.length > 0 && selectedLayer === 'commute') {
         map.fitBounds(bounds, { padding: [40, 40] });
       }
     }
-  }, [aqiData, stubbleData, commuteData, selectedLayer, center]);
+  }, [aqiData, stubbleData, commuteData, selectedLayer, center, userLocation]);
 
   return <div ref={mapContainerRef} className="map-viewport" id="leaflet-aqi-map" />;
 }
