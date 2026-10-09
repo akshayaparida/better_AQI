@@ -3,7 +3,8 @@
 > **Hyper-local air quality intelligence, cleanest commute exposure planning, and automated health advisories.**  
 > Built for **Environmental Hacks (Bharat Builds Tour 2026 by WeMakeDevs & AWS)** • **Track 01: Air**
 
-[![Backend Tests](https://img.shields.io/badge/backend%20tests-8%2F8%20passed-success?logo=pytest)](backend/tests/)
+[![CI Pipeline](https://img.shields.io/badge/CI%20Pipeline-GitHub%20Actions-blue?logo=githubactions)](.github/workflows/ci.yml)
+[![Backend Tests](https://img.shields.io/badge/backend%20tests-9%2F9%20passed-success?logo=pytest)](backend/tests/)
 [![Frontend Tests](https://img.shields.io/badge/frontend%20tests-17%2F17%20passed-success?logo=vitest)](frontend/src/tests/)
 [![Code Hygiene](https://img.shields.io/badge/oxlint-0%20warnings-brightgreen)](frontend/)
 [![AWS Architecture](https://img.shields.io/badge/AWS-Serverless%20SAM-orange?logo=amazon-aws)](template.yaml)

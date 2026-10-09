@@ -132,3 +132,16 @@ async def test_alert_subscriptions_and_check():
         check_resp = await client.get("/api/alerts/check")
         assert check_resp.status_code == 200
         assert "alerts_triggered_count" in check_resp.json()
+
+
+@pytest.mark.anyio
+async def test_security_headers_and_caching():
+    """Verify OWASP defensive headers and edge Cache-Control headers."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/api/aqi/live?lat=28.6139&lon=77.2090")
+        assert resp.status_code == 200
+        assert resp.headers.get("x-content-type-options") == "nosniff"
+        assert resp.headers.get("x-frame-options") == "DENY"
+        assert resp.headers.get("x-xss-protection") == "1; mode=block"
+        assert "max-age=120" in resp.headers.get("cache-control", "")
+

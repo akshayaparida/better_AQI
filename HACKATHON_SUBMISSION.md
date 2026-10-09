@@ -93,10 +93,11 @@ flowchart TD
 
 To meet the engineering standards of top product organizations, `better_AQI` includes automated testing across the entire stack:
 
-* **Backend Test Suite (Pytest):** **8/8 Passing** (`test_api.py` covering healthcheck, telemetry ingestion, CPCB classification, smart commute route comparisons, stubble tracker, indoor CADR calculator, and alert subscription endpoints).
+* **Backend Test Suite (Pytest):** **9/9 Passing** (`test_api.py` covering healthcheck, telemetry ingestion, CPCB classification, smart commute route comparisons, stubble tracker, indoor CADR calculator, alert subscriptions, and OWASP defense-in-depth security headers).
 * **Frontend Test Suite (Vitest + React Testing Library):** **17/17 Passing across 5 test suites** (`CommuteWidget.test.jsx`, `SchoolAdvisoryCard.test.jsx`, `IndoorPurifierCard.test.jsx`, `StubblePanel.test.jsx`, `AlertModal.test.jsx`).
 * **Static Code Analysis (`oxlint`):** **0 errors, 0 warnings** across all 16 files.
 * **Production Build (`vite build`):** Compiled in **346ms** with optimal bundle chunking.
+* **CI/CD Automation (GitHub Actions):** Continuous Integration pipeline ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) automatically verifies tests, linting, and compilation on every git push.
 * **End-to-End Browser Verification:** Fully verified using automated Chromium subagent across all tabs and modals; recorded session video preserved in project artifacts.
 
 ---

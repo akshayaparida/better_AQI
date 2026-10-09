@@ -38,15 +38,30 @@ app.add_middleware(
 )
 
 
-# Structured Request Logging Middleware
+# Structured Request Logging & OWASP Security Headers Middleware
 @app.middleware("http")
-async def log_requests(request: Request, call_next):
+async def security_and_logging_middleware(request: Request, call_next):
     start_time = time.time()
     response = await call_next(request)
     duration_ms = round((time.time() - start_time) * 1000, 2)
     logger.info(
         f"{request.method} {request.url.path} -> Status: {response.status_code} ({duration_ms}ms)"
     )
+
+    # OWASP Defense-in-Depth Security Headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+
+    # Edge caching for idempotent telemetry feeds (2-minute TTL)
+    if request.method == "GET" and request.url.path in [
+        "/api/aqi/live",
+        "/api/stubble/summary",
+        "/api/stubble/hotspots",
+    ]:
+        response.headers["Cache-Control"] = "public, max-age=120"
+
     return response
 
 
