@@ -1,0 +1,122 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  better_AQI - Hyper-Local Air Quality Intelligence, Clean Commute & Automated Health Advisories
+  Built for WeMakeDevs & AWS Environmental Hacks (Bharat Builds Tour 2026 - Track 01: Air)
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.12
+    Environment:
+      Variables:
+        APP_NAME: "better_AQI API (AWS Lambda)"
+        AWS_REGION: !Ref "AWS::Region"
+        DYNAMODB_TABLE_NAME: !Ref SubscriptionsTable
+        AWS_SNS_TOPIC_ARN: !Ref SpikeAlertsTopic
+
+Resources:
+  # ==========================================
+  # 1. Amazon API Gateway (HTTP API with CORS)
+  # ==========================================
+  BetterAqiHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowMethods:
+          - GET
+          - POST
+          - OPTIONS
+        AllowHeaders:
+          - "*"
+        AllowOrigins:
+          - "*"
+
+  # ==========================================
+  # 2. Serverless FastAPI Backend Lambda
+  # ==========================================
+  BetterAqiApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: main.handler
+      Description: Serverless FastAPI execution via Mangum ASGI adapter
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SubscriptionsTable
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt SpikeAlertsTopic.TopicName
+      Events:
+        RootEvent:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref BetterAqiHttpApi
+            Path: /
+            Method: GET
+        ProxyApiEvents:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref BetterAqiHttpApi
+            Path: /{proxy+}
+            Method: ANY
+
+  # ==========================================
+  # 3. Amazon DynamoDB: User Alert Registry
+  # ==========================================
+  SubscriptionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: better_aqi_subscriptions
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  # ==========================================
+  # 4. Amazon SNS: Instant Pollution Spike Alerts
+  # ==========================================
+  SpikeAlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: better_aqi_spike_alerts
+      DisplayName: better_AQI Spike Alerts
+
+  # ==========================================
+  # 5. AWS EventBridge: Automated Hourly Checks
+  # ==========================================
+  HourlyAirQualityCheckSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Hourly cron trigger evaluating live air pollution against registered subscriber thresholds
+      ScheduleExpression: "rate(1 hour)"
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt BetterAqiApiFunction.Arn
+          Id: "HourlyBetterAqiLambdaCheck"
+          Input: '{"rawPath": "/api/alerts/check", "requestContext": {"http": {"method": "GET"}}}'
+
+  PermissionForEventsToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref BetterAqiApiFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt HourlyAirQualityCheckSchedule.Arn
+
+Outputs:
+  ApiUrl:
+    Description: HTTP API Gateway endpoint URL for better_AQI
+    Value: !Sub "https://${BetterAqiHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+  LambdaFunctionArn:
+    Description: Lambda Function ARN
+    Value: !GetAtt BetterAqiApiFunction.Arn
+  SnsTopicArn:
+    Description: Amazon SNS Topic ARN for Spike Alerts
+    Value: !Ref SpikeAlertsTopic
+  DynamoDbTableName:
+    Description: Amazon DynamoDB Table Name
+    Value: !Ref SubscriptionsTable

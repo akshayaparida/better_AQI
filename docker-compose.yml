@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: better_aqi_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_NAME=better_AQI Containerized API
+      - AWS_REGION=ap-south-1
+      - LOG_LEVEL=INFO
+    restart: unless-stopped
+
+  frontend:
+    image: node:20-alpine
+    container_name: better_aqi_frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+    command: sh -c "corepack enable && pnpm install && pnpm dev --host 0.0.0.0"
+    depends_on:
+      - backend
