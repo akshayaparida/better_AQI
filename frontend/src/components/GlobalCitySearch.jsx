@@ -47,14 +47,75 @@ export default function GlobalCitySearch({ activeCity, onCitySelect }) {
 
   const handleSelect = (city) => {
     onCitySelect(city);
-    setQuery('');
+    setQuery(`${city.name}${city.country ? ', ' + city.country : ''}`);
     setIsOpen(false);
+  };
+
+  const handleSearchSubmit = async (e) => {
+    if (e) e.preventDefault();
+    const trimmed = query.trim();
+    if (!trimmed) return;
+
+    // 1. If dropdown already has results, select first match
+    if (searchResults.length > 0) {
+      const top = searchResults[0];
+      handleSelect({
+        id: top.name.toLowerCase().replace(/\s+/g, '_'),
+        name: top.name,
+        country: top.country,
+        lat: top.lat,
+        lon: top.lon,
+      });
+      return;
+    }
+
+    // 2. Check local catalog first (e.g. jaipur, mumbai, etc.)
+    const localMatch = POPULAR_WORLD_CITIES.find(
+      (c) => c.name.toLowerCase().includes(trimmed.toLowerCase()) || c.id.toLowerCase().includes(trimmed.toLowerCase())
+    );
+    if (localMatch) {
+      handleSelect(localMatch);
+      return;
+    }
+
+    // 3. Perform immediate fetch
+    setIsSearching(true);
+    try {
+      const res = await fetch(`/api/geo/search?q=${encodeURIComponent(trimmed)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+          const top = data.results[0];
+          handleSelect({
+            id: top.name.toLowerCase().replace(/\s+/g, '_'),
+            name: top.name,
+            country: top.country,
+            lat: top.lat,
+            lon: top.lon,
+          });
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('Failed to search city:', err);
+    } finally {
+      setIsSearching(false);
+    }
+
+    // 4. Universal Free-Text Fallback (Google Maps behavior)
+    handleSelect({
+      id: trimmed.toLowerCase().replace(/\s+/g, '_'),
+      name: trimmed,
+      country: 'India',
+      lat: activeCity?.lat || 26.9124,
+      lon: activeCity?.lon || 75.7873,
+    });
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }} ref={dropdownRef}>
-      {/* Worldwide Search Input Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+      {/* Worldwide Search Input Bar with Enter Key & Search Button */}
+      <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', flex: 1, minWidth: '280px' }}>
           <div style={{
             position: 'absolute',
@@ -82,11 +143,16 @@ export default function GlobalCitySearch({ activeCity, onCitySelect }) {
                 setIsOpen(false);
               }
             }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleSearchSubmit(e);
+              }
+            }}
             onFocus={() => { if (searchResults.length > 0) setIsOpen(true); }}
-            placeholder="🌍 Search any city or location worldwide (e.g. London, Tokyo, New York, Mumbai, Paris)..."
+            placeholder="🌍 Search any city or location worldwide — universities, villages, landmarks (e.g. DTU, IIT, BITS, Kukas, Ajmer, Jaipur)..."
             style={{
               width: '100%',
-              padding: '10px 36px 10px 38px',
+              padding: '10px 40px 10px 38px',
               borderRadius: '10px',
               background: 'rgba(15, 23, 42, 0.75)',
               border: '1px solid var(--border-color)',
@@ -167,9 +233,24 @@ export default function GlobalCitySearch({ activeCity, onCitySelect }) {
                   onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                 >
                   <MapPin size={14} color="#10B981" />
-                  <div>
-                    <span style={{ fontWeight: '600' }}>{res.name}</span>
-                    <span style={{ color: 'var(--text-muted)', marginLeft: '6px', fontSize: '0.75rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontWeight: '600' }}>{res.name}</span>
+                      {res.type && (
+                        <span style={{
+                          fontSize: '0.68rem',
+                          padding: '1px 6px',
+                          borderRadius: '4px',
+                          background: 'rgba(59, 130, 246, 0.2)',
+                          color: '#60A5FA',
+                          border: '1px solid rgba(59, 130, 246, 0.3)',
+                          textTransform: 'capitalize',
+                        }}>
+                          {res.type}
+                        </span>
+                      )}
+                    </div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.74rem' }}>
                       {res.admin1 ? `${res.admin1}, ` : ''}{res.country} ({res.lat.toFixed(2)}, {res.lon.toFixed(2)})
                     </span>
                   </div>
@@ -178,6 +259,17 @@ export default function GlobalCitySearch({ activeCity, onCitySelect }) {
             </div>
           )}
         </div>
+
+        {/* Search Submit Button */}
+        <button
+          type="submit"
+          className="btn-primary"
+          id="btn-global-city-search"
+          style={{ padding: '9px 18px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+        >
+          <Search size={15} />
+          <span>Search</span>
+        </button>
 
         {/* Global Active Badge */}
         <div style={{
@@ -195,7 +287,7 @@ export default function GlobalCitySearch({ activeCity, onCitySelect }) {
           <Globe size={15} />
           <span>Active: {activeCity.name}{activeCity.country ? `, ${activeCity.country}` : ''}</span>
         </div>
-      </div>
+      </form>
 
       {/* Quick Select Popular World Capitals & Metropolises */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>

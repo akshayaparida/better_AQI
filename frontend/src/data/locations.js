@@ -1,5 +1,7 @@
 export const POPULAR_WORLD_CITIES = [
   { id: 'delhi', name: 'Delhi NCR', country: 'India', flag: '🇮🇳', lat: 28.6139, lon: 77.2090 },
+  { id: 'jaipur', name: 'Jaipur', country: 'India', flag: '🇮🇳', lat: 26.9124, lon: 75.7873 },
+  { id: 'ajmer', name: 'Ajmer', country: 'India', flag: '🇮🇳', lat: 26.4499, lon: 74.6399 },
   { id: 'mumbai', name: 'Mumbai', country: 'India', flag: '🇮🇳', lat: 19.0760, lon: 72.8777 },
   { id: 'bengaluru', name: 'Bengaluru', country: 'India', flag: '🇮🇳', lat: 12.9716, lon: 77.5946 },
   { id: 'london', name: 'London', country: 'United Kingdom', flag: '🇬🇧', lat: 51.5074, lon: -0.1278 },
@@ -23,6 +25,40 @@ export const POPULAR_HUBS = [
 
 export const GLOBAL_CITY_HUBS = {
   delhi: POPULAR_HUBS,
+  jaipur: [
+    { id: 'hawa_mahal', name: 'Hawa Mahal / Badi Chaupar', lat: 26.9239, lon: 75.8267 },
+    { id: 'mansarovar', name: 'Mansarovar Metro Station', lat: 26.8654, lon: 75.7600 },
+    { id: 'amer_fort', name: 'Amer Fort / Maota Lake', lat: 26.9855, lon: 75.8513 },
+    { id: 'jaipur_airport', name: 'Jaipur International Airport', lat: 26.8289, lon: 75.8056 },
+    { id: 'malviya_nagar', name: 'Malviya Nagar / WTP', lat: 26.8530, lon: 75.8051 },
+    { id: 'c_scheme', name: 'C-Scheme Ashok Nagar', lat: 26.9078, lon: 75.8020 },
+  ],
+  ajmer: [
+    { id: 'dargah_sharif', name: 'Ajmer Sharif Dargah', lat: 26.4563, lon: 74.6282 },
+    { id: 'ana_sagar', name: 'Ana Sagar Lake Promenade', lat: 26.4754, lon: 74.6234 },
+    { id: 'ajmer_junction', name: 'Ajmer Junction Station', lat: 26.4526, lon: 74.6394 },
+    { id: 'pushkar_ghati', name: 'Pushkar Ghati / Pass', lat: 26.4812, lon: 74.5822 },
+    { id: 'mayo_college', name: 'Mayo College', lat: 26.4385, lon: 74.6548 },
+  ],
+  kukas: [
+    { id: 'kukas_chowk', name: 'Kukas Main Chowk / Highway Circle', lat: 27.0421, lon: 75.8943 },
+    { id: 'arya_college', name: 'Arya College Campus (Kukas)', lat: 27.0468, lon: 75.8986 },
+    { id: 'kukas_riico', name: 'Kukas RIICO Industrial Zone', lat: 27.0390, lon: 75.8920 },
+    { id: 'kukas_panchayat', name: 'Kukas Gram Panchayat Bhawan', lat: 27.0440, lon: 75.8955 },
+    { id: 'kukas_phc', name: 'Kukas Primary Health Centre (PHC)', lat: 27.0405, lon: 75.8935 },
+  ],
+  pushkar: [
+    { id: 'brahma_temple', name: 'Brahma Temple Chowk', lat: 26.4899, lon: 74.5511 },
+    { id: 'sarovar_ghat', name: 'Pushkar Sarovar Lake Ghat', lat: 26.4880, lon: 74.5525 },
+    { id: 'mela_ground', name: 'Pushkar Mela Ground', lat: 26.4920, lon: 74.5480 },
+    { id: 'marwar_bus', name: 'Marwar Bus Terminal', lat: 26.4865, lon: 74.5550 },
+  ],
+  amity_university: [
+    { id: 'amity_gate', name: 'Amity University Main Gate 1', lat: 27.1735, lon: 75.9553 },
+    { id: 'amity_academic', name: 'Academic Block & Central Library', lat: 27.1745, lon: 75.9565 },
+    { id: 'amity_hostel', name: 'Student Hostel Complex', lat: 27.1725, lon: 75.9540 },
+    { id: 'amity_sports', name: 'Campus Sports Arena & Stadium', lat: 27.1750, lon: 75.9530 },
+  ],
   mumbai: [
     { id: 'nariman_pt', name: 'Nariman Point (South Mumbai)', lat: 18.9256, lon: 72.8242 },
     { id: 'bkc', name: 'Bandra Kurla Complex (BKC)', lat: 19.0607, lon: 72.8685 },

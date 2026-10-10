@@ -11,17 +11,119 @@ import AlertModal from './components/AlertModal';
 import { Gauge } from 'lucide-react';
 
 function getHubsForCity(city) {
-  if (GLOBAL_CITY_HUBS[city.id]) {
-    return GLOBAL_CITY_HUBS[city.id];
+  if (!city) return [];
+  const cityKey = (city.id || city.name || '').toLowerCase().replace(/[^a-z0-9]/g, '_');
+
+  if (GLOBAL_CITY_HUBS[city.id] || GLOBAL_CITY_HUBS[cityKey]) {
+    return GLOBAL_CITY_HUBS[city.id] || GLOBAL_CITY_HUBS[cityKey];
   }
-  const lat = city.lat;
-  const lon = city.lon;
-  const name = city.name || 'Metropolis';
+
+  const lat = city.lat || 26.9124;
+  const lon = city.lon || 75.7873;
+  const rawName = city.name || 'Location';
+  const name = rawName.split(',')[0].trim();
+  const lowerName = name.toLowerCase();
+  const country = (city.country || '').toLowerCase();
+  const placeType = (city.type || '').toLowerCase();
+
+  // 1. Universities, Colleges, Campuses, Institutes
+  const isEdu = placeType.includes('university') || placeType.includes('college') ||
+    lowerName.includes('university') || lowerName.includes('college') ||
+    lowerName.includes('campus') || lowerName.includes('institute') ||
+    lowerName.includes('iit') || lowerName.includes('bits') || lowerName.includes('nit') || lowerName.includes('dtu');
+
+  if (isEdu) {
+    return [
+      { id: 'main_gate', name: `${name} Main Gate & Reception`, lat: lat, lon: lon },
+      { id: 'admin_block', name: `${name} Central Administrative Block`, lat: Number((lat + 0.003).toFixed(4)), lon: Number((lon + 0.002).toFixed(4)) },
+      { id: 'library', name: `${name} Central Library & Academic Hub`, lat: Number((lat - 0.003).toFixed(4)), lon: Number((lon + 0.004).toFixed(4)) },
+      { id: 'hostel_block', name: `${name} Student Hostels & Residential Zone`, lat: Number((lat + 0.005).toFixed(4)), lon: Number((lon - 0.003).toFixed(4)) },
+      { id: 'sports_arena', name: `${name} Sports Ground & Campus Arena`, lat: Number((lat - 0.004).toFixed(4)), lon: Number((lon - 0.004).toFixed(4)) },
+    ];
+  }
+
+  // 2. Villages, Rural Panchayats, Hamlets (Culturally tailored like Google Maps)
+  const isVillage = placeType.includes('village') || placeType.includes('hamlet') ||
+    lowerName.includes('village') || lowerName.includes('gram') || lowerName.includes('panchayat') ||
+    ['kukas', 'kookas', 'achrol', 'chandwaji', 'bagru', 'khori', 'naila', 'samode', 'kanota', 'bhanpur', 'dharampur', 'rampur'].some(v => lowerName.includes(v));
+
+  if (isVillage) {
+    return [
+      { id: 'main_chowk', name: `${name} Main Chowk / Bus Stand`, lat: lat, lon: lon },
+      { id: 'panchayat_bhawan', name: `${name} Gram Panchayat Bhawan`, lat: Number((lat + 0.004).toFixed(4)), lon: Number((lon + 0.003).toFixed(4)) },
+      { id: 'phc_hospital', name: `${name} Primary Health Centre (PHC)`, lat: Number((lat - 0.004).toFixed(4)), lon: Number((lon + 0.004).toFixed(4)) },
+      { id: 'highway_bypass', name: `${name} Highway Bypass Circle`, lat: Number((lat + 0.006).toFixed(4)), lon: Number((lon - 0.004).toFixed(4)) },
+      { id: 'main_market', name: `${name} Main Bazaar / Mandi`, lat: Number((lat - 0.003).toFixed(4)), lon: Number((lon - 0.003).toFixed(4)) },
+    ];
+  }
+
+  // 3. Indian Cities / Towns (Station, ISBT, Civil Lines, Old City)
+  if (country.includes('india') || country === '' || ['delhi', 'rajasthan', 'mumbai', 'jaipur', 'up', 'punjab', 'gujarat', 'haryana'].some(r => (city.admin1 || '').toLowerCase().includes(r))) {
+    return [
+      { id: 'railway_junction', name: `${name} Railway Station / Junction`, lat: lat, lon: lon },
+      { id: 'bus_terminal', name: `${name} Central Bus Stand (ISBT)`, lat: Number((lat + 0.025).toFixed(4)), lon: Number((lon + 0.018).toFixed(4)) },
+      { id: 'civil_lines', name: `${name} Civil Lines / Main Market`, lat: Number((lat - 0.022).toFixed(4)), lon: Number((lon + 0.028).toFixed(4)) },
+      { id: 'old_city', name: `${name} Old City / Heritage Circle`, lat: Number((lat + 0.018).toFixed(4)), lon: Number((lon - 0.022).toFixed(4)) },
+      { id: 'ring_road', name: `${name} Ring Road / Highway Bypass`, lat: Number((lat - 0.030).toFixed(4)), lon: Number((lon - 0.025).toFixed(4)) },
+    ];
+  }
+
+  // 4. United Kingdom & Commonwealth (City Centre, High Street, Central Rail)
+  if (country.includes('united kingdom') || country.includes('uk') || country.includes('england') || country.includes('scotland')) {
+    return [
+      { id: 'high_street', name: `${name} City Centre / High Street`, lat: lat, lon: lon },
+      { id: 'central_rail', name: `${name} Central Railway Station`, lat: Number((lat + 0.015).toFixed(4)), lon: Number((lon + 0.012).toFixed(4)) },
+      { id: 'market_sq', name: `${name} Market Square & Cathedral Quarter`, lat: Number((lat - 0.012).toFixed(4)), lon: Number((lon + 0.015).toFixed(4)) },
+      { id: 'west_end', name: `${name} West End / Riverside Promenade`, lat: Number((lat - 0.018).toFixed(4)), lon: Number((lon - 0.015).toFixed(4)) },
+    ];
+  }
+
+  // 5. France & Francophone (Centre-Ville, Gare Centrale)
+  if (country.includes('france') || country.includes('belgium') || country.includes('switzerland')) {
+    return [
+      { id: 'centre_ville', name: `${name} Centre-Ville / Place Centrale`, lat: lat, lon: lon },
+      { id: 'gare_centrale', name: `${name} Gare Centrale (Station)`, lat: Number((lat + 0.015).toFixed(4)), lon: Number((lon + 0.012).toFixed(4)) },
+      { id: 'vieux_quartier', name: `${name} Quartier Historique`, lat: Number((lat - 0.012).toFixed(4)), lon: Number((lon + 0.015).toFixed(4)) },
+      { id: 'grand_boulevard', name: `${name} Boulevard Commercial`, lat: Number((lat - 0.018).toFixed(4)), lon: Number((lon - 0.015).toFixed(4)) },
+    ];
+  }
+
+  // 6. Germany & Central Europe (Stadtmitte, Hauptbahnhof)
+  if (country.includes('germany') || country.includes('austria')) {
+    return [
+      { id: 'stadtmitte', name: `${name} Stadtmitte / Marktplatz`, lat: lat, lon: lon },
+      { id: 'hauptbahnhof', name: `${name} Hauptbahnhof (Central Station)`, lat: Number((lat + 0.015).toFixed(4)), lon: Number((lon + 0.012).toFixed(4)) },
+      { id: 'altstadt', name: `${name} Altstadt (Historic Old Town)`, lat: Number((lat - 0.012).toFixed(4)), lon: Number((lon + 0.015).toFixed(4)) },
+      { id: 'ring_nord', name: `${name} Nordring / Gewerbegebiet`, lat: Number((lat - 0.018).toFixed(4)), lon: Number((lon - 0.015).toFixed(4)) },
+    ];
+  }
+
+  // 7. Japan & East Asia (Chuo, Dori, Civic Center)
+  if (country.includes('japan') || country.includes('korea')) {
+    return [
+      { id: 'chuo_station', name: `${name} Chuo / Central Station Terminal`, lat: lat, lon: lon },
+      { id: 'dori_crossing', name: `${name} Main Commercial Crossing`, lat: Number((lat + 0.015).toFixed(4)), lon: Number((lon + 0.012).toFixed(4)) },
+      { id: 'civic_center', name: `${name} Civic Center & Ward Office`, lat: Number((lat - 0.012).toFixed(4)), lon: Number((lon + 0.015).toFixed(4)) },
+      { id: 'garden_district', name: `${name} Koen / Garden Promenade`, lat: Number((lat - 0.018).toFixed(4)), lon: Number((lon - 0.015).toFixed(4)) },
+    ];
+  }
+
+  // 8. Middle East / UAE (Corniche, Old Souk, Marina)
+  if (country.includes('uae') || country.includes('saudi') || country.includes('qatar') || country.includes('dubai')) {
+    return [
+      { id: 'corniche', name: `${name} Corniche / Waterfront Walk`, lat: lat, lon: lon },
+      { id: 'financial_hub', name: `${name} Financial District / Trade Center`, lat: Number((lat + 0.015).toFixed(4)), lon: Number((lon + 0.012).toFixed(4)) },
+      { id: 'old_souk', name: `${name} Old Souk Heritage Quarter`, lat: Number((lat - 0.012).toFixed(4)), lon: Number((lon + 0.015).toFixed(4)) },
+      { id: 'grand_boulevard', name: `${name} Grand Avenue / Marina Mall`, lat: Number((lat - 0.018).toFixed(4)), lon: Number((lon - 0.015).toFixed(4)) },
+    ];
+  }
+
+  // 9. North America / USA (Downtown, Financial District, Midtown)
   return [
-    { id: 'downtown', name: `${name} Downtown Center`, lat: lat, lon: lon },
-    { id: 'north_corridor', name: `${name} North District`, lat: Number((lat + 0.045).toFixed(4)), lon: Number((lon + 0.025).toFixed(4)) },
-    { id: 'financial_hub', name: `${name} Financial Quarter`, lat: Number((lat - 0.038).toFixed(4)), lon: Number((lon + 0.048).toFixed(4)) },
-    { id: 'airport_west', name: `${name} International Airport`, lat: Number((lat - 0.035).toFixed(4)), lon: Number((lon - 0.052).toFixed(4)) },
+    { id: 'downtown', name: `${name} Downtown / City Center`, lat: lat, lon: lon },
+    { id: 'financial_district', name: `${name} Financial District / Metro Hub`, lat: Number((lat + 0.025).toFixed(4)), lon: Number((lon + 0.018).toFixed(4)) },
+    { id: 'midtown', name: `${name} Midtown / Arts Quarter`, lat: Number((lat - 0.022).toFixed(4)), lon: Number((lon + 0.028).toFixed(4)) },
+    { id: 'airport_west', name: `${name} International Airport Terminal`, lat: Number((lat - 0.030).toFixed(4)), lon: Number((lon - 0.025).toFixed(4)) },
   ];
 }
 
@@ -40,6 +142,8 @@ export default function App() {
   // Commute Origin & Destination State
   const [originHubId, setOriginHubId] = useState('connaught_place');
   const [destinationHubId, setDestinationHubId] = useState('dtu_campus');
+  const [customOrigin, setCustomOrigin] = useState(null);
+  const [customDestination, setCustomDestination] = useState(null);
 
   // Telemetry States
   const [aqiData, setAqiData] = useState(null);
@@ -73,8 +177,12 @@ export default function App() {
   const handleCitySelect = (city) => {
     setActiveCity(city);
     const hubs = getHubsForCity(city);
-    setOriginHubId(hubs[0]?.id || 'downtown');
-    setDestinationHubId(hubs[1]?.id || 'north_corridor');
+    const origin = hubs[0] || { id: 'downtown', name: `${city.name} Downtown`, lat: city.lat, lon: city.lon };
+    const dest = hubs[1] || { id: 'north_corridor', name: `${city.name} North`, lat: Number((city.lat + 0.045).toFixed(4)), lon: Number((city.lon + 0.025).toFixed(4)) };
+    setOriginHubId(origin.id);
+    setDestinationHubId(dest.id);
+    setCustomOrigin(origin);
+    setCustomDestination(dest);
   };
 
   // Detect HTML5 Geolocation Position anywhere in the world
@@ -110,26 +218,26 @@ export default function App() {
   useEffect(() => {
     async function loadCommute() {
       const hubs = getHubsForCity(activeCity);
-      let startLat = hubs[0]?.lat || activeCity.lat;
-      let startLon = hubs[0]?.lon || activeCity.lon;
-      let endLat = hubs[1]?.lat || (activeCity.lat + 0.05);
-      let endLon = hubs[1]?.lon || (activeCity.lon + 0.03);
+      let startLat = customOrigin?.lat;
+      let startLon = customOrigin?.lon;
+      let endLat = customDestination?.lat;
+      let endLon = customDestination?.lon;
 
-      if (originHubId === 'current_location' && userLocation) {
-        startLat = userLocation.lat;
-        startLon = userLocation.lon;
-      } else {
-        const startHub = hubs.find((h) => h.id === originHubId);
-        if (startHub) {
-          startLat = startHub.lat;
-          startLon = startHub.lon;
+      if (!startLat || !startLon) {
+        if (originHubId === 'current_location' && userLocation) {
+          startLat = userLocation.lat;
+          startLon = userLocation.lon;
+        } else {
+          const startHub = hubs.find((h) => h.id === originHubId) || hubs[0];
+          startLat = startHub?.lat || activeCity.lat;
+          startLon = startHub?.lon || activeCity.lon;
         }
       }
 
-      const endHub = hubs.find((h) => h.id === destinationHubId);
-      if (endHub) {
-        endLat = endHub.lat;
-        endLon = endHub.lon;
+      if (!endLat || !endLon) {
+        const endHub = hubs.find((h) => h.id === destinationHubId) || hubs[1];
+        endLat = endHub?.lat || Number((activeCity.lat + 0.045).toFixed(4));
+        endLon = endHub?.lon || Number((activeCity.lon + 0.025).toFixed(4));
       }
 
       try {
@@ -144,7 +252,7 @@ export default function App() {
       }
     }
     loadCommute();
-  }, [selectedTransitMode, originHubId, destinationHubId, userLocation, activeCity]);
+  }, [selectedTransitMode, originHubId, destinationHubId, customOrigin, customDestination, userLocation, activeCity]);
 
   const current = aqiData?.current;
 
@@ -302,9 +410,15 @@ export default function App() {
                 destinationId={destinationHubId}
                 userLocation={userLocation}
                 availableHubs={currentHubs}
-                onEndpointsChange={({ originId, destinationId }) => {
-                  setOriginHubId(originId);
-                  setDestinationHubId(destinationId);
+                activeCity={activeCity}
+                customOrigin={customOrigin}
+                customDestination={customDestination}
+                onDetectLocation={handleDetectLocation}
+                onEndpointsChange={({ originId, destinationId, originLocation, destinationLocation }) => {
+                  if (originId) setOriginHubId(originId);
+                  if (destinationId) setDestinationHubId(destinationId);
+                  if (originLocation !== undefined) setCustomOrigin(originLocation);
+                  if (destinationLocation !== undefined) setCustomDestination(destinationLocation);
                 }}
               />
             )}

@@ -72,4 +72,26 @@ describe('GlobalCitySearch Component', () => {
       expect.objectContaining({ name: 'Berlin', country: 'Germany', lat: 52.52, lon: 13.405 })
     );
   });
+
+  it('selects city immediately when typing and pressing Enter or clicking Search button', () => {
+    const handleCitySelect = vi.fn();
+    render(<GlobalCitySearch activeCity={mockCity} onCitySelect={handleCitySelect} />);
+
+    const input = screen.getByPlaceholderText(/search any city or location worldwide/i);
+    fireEvent.change(input, { target: { value: 'Jaipur' } });
+    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
+
+    expect(handleCitySelect).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Jaipur', country: 'India' })
+    );
+
+    // Also test search submit button
+    const searchBtn = screen.getByRole('button', { name: /^search$/i });
+    fireEvent.change(input, { target: { value: 'Mumbai' } });
+    fireEvent.click(searchBtn);
+
+    expect(handleCitySelect).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Mumbai', country: 'India' })
+    );
+  });
 });

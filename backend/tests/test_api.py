@@ -180,6 +180,35 @@ async def test_global_geocoding_search():
         assert data["query"] == "Tokyo"
         assert "results" in data
 
+        # Test Jaipur and landmark indexing
+        jaipur_resp = await client.get("/api/geo/search?q=Jaipur")
+        assert jaipur_resp.status_code == 200
+        jaipur_data = jaipur_resp.json()
+        assert any("Jaipur" in r["name"] for r in jaipur_data["results"])
+
+        hawa_resp = await client.get("/api/geo/search?q=Hawa+Mahal")
+        assert hawa_resp.status_code == 200
+        hawa_data = hawa_resp.json()
+        assert any("Hawa Mahal" in r["name"] for r in hawa_data["results"])
+
+        # Test Ajmer search
+        ajmer_resp = await client.get("/api/geo/search?q=Ajmer")
+        assert ajmer_resp.status_code == 200
+        ajmer_data = ajmer_resp.json()
+        assert any("Ajmer" in r["name"] for r in ajmer_data["results"])
+
+        # Test University search
+        dtu_resp = await client.get("/api/geo/search?q=DTU")
+        assert dtu_resp.status_code == 200
+        dtu_data = dtu_resp.json()
+        assert len(dtu_data["results"]) > 0
+
+        # Test Village / specific place search
+        pushkar_resp = await client.get("/api/geo/search?q=Pushkar")
+        assert pushkar_resp.status_code == 200
+        pushkar_data = pushkar_resp.json()
+        assert any("Pushkar" in r["name"] for r in pushkar_data["results"])
+
 
 @pytest.mark.anyio
 async def test_worldwide_cities_aqi():

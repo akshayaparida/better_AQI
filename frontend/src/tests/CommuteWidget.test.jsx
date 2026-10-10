@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import CommuteWidget from '../components/CommuteWidget';
 
@@ -117,5 +117,100 @@ describe('CommuteWidget Component', () => {
     );
 
     expect(screen.getByText(/📍 My Current Location \(28.535, 77.391\)/i)).toBeInTheDocument();
+  });
+
+  it('renders Uber-style pickup and drop-off typeahead inputs and landmark chips', () => {
+    const handleEndpointsChange = vi.fn();
+    render(
+      <CommuteWidget
+        commuteData={mockCommuteData}
+        onModeChange={vi.fn()}
+        originId="connaught_place"
+        destinationId="dtu_campus"
+        onEndpointsChange={handleEndpointsChange}
+      />
+    );
+
+    const originInput = screen.getByPlaceholderText(/pickup location/i);
+    const destInput = screen.getByPlaceholderText(/drop-off destination/i);
+
+    expect(originInput).toBeInTheDocument();
+    expect(destInput).toBeInTheDocument();
+    expect(originInput.value).toContain('Connaught Place');
+    expect(destInput.value).toContain('DTU Campus');
+
+    // Clicking a landmark chip selects destination
+    const chip = screen.getByRole('button', { name: /cyber hub/i });
+    expect(chip).toBeInTheDocument();
+    fireEvent.click(chip);
+
+    expect(handleEndpointsChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        destinationId: 'cyber_hub',
+      })
+    );
+  });
+
+  it('supports normal typing in destination input and pressing Enter to apply', async () => {
+    const originalFetch = global.fetch;
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        query: 'Ajmer',
+        results: [{ name: 'Ajmer', country: 'India', lat: 26.4499, lon: 74.6399 }],
+      }),
+    });
+
+    const handleEndpointsChange = vi.fn();
+    render(
+      <CommuteWidget
+        commuteData={mockCommuteData}
+        onModeChange={vi.fn()}
+        originId="connaught_place"
+        destinationId="dtu_campus"
+        onEndpointsChange={handleEndpointsChange}
+      />
+    );
+
+    const destInput = screen.getByPlaceholderText(/drop-off destination/i);
+    fireEvent.change(destInput, { target: { value: 'Ajmer' } });
+    fireEvent.keyDown(destInput, { key: 'Enter', code: 'Enter' });
+
+    await waitFor(() => {
+      expect(handleEndpointsChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          destinationId: expect.any(String),
+        })
+      );
+    });
+
+    global.fetch = originalFetch;
+  });
+
+  it('opens Google Maps route navigation when clicking Open in Google Maps button', () => {
+    const originalOpen = window.open;
+    window.open = vi.fn();
+
+    render(
+      <CommuteWidget
+        commuteData={mockCommuteData}
+        onModeChange={vi.fn()}
+        originId="connaught_place"
+        destinationId="dtu_campus"
+      />
+    );
+
+    const mapsBtn = screen.getByRole('button', { name: /open in google maps/i });
+    expect(mapsBtn).toBeInTheDocument();
+    fireEvent.click(mapsBtn);
+
+    expect(window.open).toHaveBeenCalledTimes(1);
+    expect(window.open).toHaveBeenCalledWith(
+      expect.stringContaining('google.com/maps/dir'),
+      '_blank',
+      'noopener,noreferrer'
+    );
+
+    window.open = originalOpen;
   });
 });
