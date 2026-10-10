@@ -16,6 +16,7 @@ describe('Navbar Component with GPS Location', () => {
     expect(screen.getByText('AQI')).toBeInTheDocument();
     expect(screen.getByText('Live AQI & Map')).toBeInTheDocument();
     expect(screen.getByText('Cleanest Commute')).toBeInTheDocument();
+    expect(screen.getByText('Citizen Action')).toBeInTheDocument();
     expect(screen.getByText('Spike Alerts')).toBeInTheDocument();
   });
 

@@ -7,8 +7,9 @@ import { POPULAR_WORLD_CITIES, GLOBAL_CITY_HUBS } from './data/locations';
 import SchoolAdvisoryCard from './components/SchoolAdvisoryCard';
 import IndoorPurifierCard from './components/IndoorPurifierCard';
 import StubblePanel from './components/StubblePanel';
+import CitizenResponsibilityCard from './components/CitizenResponsibilityCard';
 import AlertModal from './components/AlertModal';
-import { Gauge } from 'lucide-react';
+import { Gauge, HeartHandshake } from 'lucide-react';
 
 function getHubsForCity(city) {
   if (!city) return [];
@@ -398,6 +399,45 @@ export default function App() {
 
                 {/* Quick Jump Previews */}
                 <SchoolAdvisoryCard advisoryData={schoolData} />
+
+                {/* Citizen Responsibility Callout */}
+                <div
+                  className="glass-panel"
+                  style={{
+                    padding: '16px 20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%)',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ padding: '8px', background: 'rgba(16, 185, 129, 0.2)', borderRadius: '10px', color: '#10B981' }}>
+                      <HeartHandshake size={22} />
+                    </div>
+                    <div>
+                      <h4 style={{ fontSize: '0.94rem', margin: 0, color: 'var(--text-primary)' }}>
+                        Citizen Responsibility & Action Pledge
+                      </h4>
+                      <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
+                        Civic actions prevent up to 30% of hyper-local PM2.5 spikes. Check your daily impact.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('citizen')}
+                    className="btn-primary"
+                    style={{ padding: '7px 16px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <span>View Citizen Actions</span>
+                    <span>→</span>
+                  </button>
+                </div>
               </div>
             )}
 
@@ -433,6 +473,10 @@ export default function App() {
 
             {activeTab === 'stubble' && (
               <StubblePanel stubbleData={stubbleData} />
+            )}
+
+            {activeTab === 'citizen' && (
+              <CitizenResponsibilityCard />
             )}
           </section>
         </div>

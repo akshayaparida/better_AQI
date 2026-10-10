@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wind, Bell, Shield, Navigation, Home, Flame, LocateFixed, Loader2 } from 'lucide-react';
+import { Wind, Bell, Shield, Navigation, Home, Flame, LocateFixed, Loader2, HeartHandshake } from 'lucide-react';
 
 export default function Navbar({
   activeTab,
@@ -15,6 +15,7 @@ export default function Navbar({
     { id: 'school', label: 'School Advisory', icon: Shield },
     { id: 'indoor', label: 'Indoor Purifier', icon: Home },
     { id: 'stubble', label: 'Stubble Fires', icon: Flame },
+    { id: 'citizen', label: 'Citizen Action', icon: HeartHandshake },
   ];
 
   return (
