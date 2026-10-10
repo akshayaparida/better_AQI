@@ -8,11 +8,9 @@ import {
   Flame,
   Droplets,
   Zap,
-  PhoneCall,
   Sparkles,
   ShieldCheck,
   TrendingDown,
-  Info,
 } from 'lucide-react';
 
 const CITIZEN_ACTIONS = [
@@ -340,8 +338,9 @@ export default function CitizenResponsibilityCard() {
 
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
-                    <span style={{ fontSize: '0.82rem', fontWeight: '600', color: isDone ? '#10B981' : 'var(--text-primary)' }}>
-                      {action.title}
+                    <span style={{ fontSize: '0.82rem', fontWeight: '600', color: isDone ? '#10B981' : 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Icon size={14} color={isDone ? '#10B981' : action.color} />
+                      <span>{action.title}</span>
                     </span>
                     <span style={{ fontSize: '0.68rem', fontWeight: '700', color: action.color }}>
                       +{action.credits} pts
