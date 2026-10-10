@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 import httpx
 
+from pydantic import BaseModel, Field
 from config import settings, logger
 from services.aqi_service import fetch_live_aqi
 from services.advisory_service import get_school_advisory
@@ -23,6 +24,7 @@ from services.alert_service import (
 )
 from services.stubble_service import get_stubble_burning_status
 from services.indoor_service import IndoorAirRequest, evaluate_indoor_air
+from services.strands_agent_service import consult_air_agent, get_agent_capabilities
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -469,6 +471,33 @@ async def trigger_alerts_evaluation(
     lon: float = Query(settings.DEFAULT_LONGITUDE, description="Longitude to check"),
 ):
     return await check_and_dispatch_alerts(latitude=lat, longitude=lon)
+
+
+# 7. AI Agent - AWS Strands Agents SDK
+class AgentConsultationRequest(BaseModel):
+    prompt: str = Field(..., min_length=2, examples=["Should our school hold morning assembly outdoors today?"])
+    latitude: float = Field(default=settings.DEFAULT_LATITUDE, examples=[28.6139])
+    longitude: float = Field(default=settings.DEFAULT_LONGITUDE, examples=[77.2090])
+    commute_mode: str = Field(default="bicycle", examples=["bicycle", "two_wheeler", "car_ac", "walking"])
+    distance_km: float = Field(default=8.5, ge=0.5, le=100.0, examples=[8.5])
+
+
+@app.get("/api/agent/capabilities", tags=["AI Agent (AWS Strands SDK)"])
+async def agent_capabilities():
+    """Return introspection capabilities and tools registered under AWS Strands Agents SDK."""
+    return get_agent_capabilities()
+
+
+@app.post("/api/agent/consult", tags=["AI Agent (AWS Strands SDK)"])
+async def agent_consult(payload: AgentConsultationRequest):
+    """Consult the autonomous AWS Strands Air Intelligence Agent."""
+    return await consult_air_agent(
+        prompt=payload.prompt,
+        latitude=payload.latitude,
+        longitude=payload.longitude,
+        commute_mode=payload.commute_mode,
+        distance_km=payload.distance_km,
+    )
 
 
 # AWS Lambda adapter

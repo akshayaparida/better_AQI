@@ -1,0 +1,14 @@
+services:
+  localstack:
+    container_name: better_aqi_localstack
+    image: localstack/localstack:latest
+    ports:
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway & all AWS service APIs
+      - "127.0.0.1:4510-4559:4510-4559"  # External service port range
+    environment:
+      - SERVICES=dynamodb,sns,lambda,apigateway
+      - AWS_DEFAULT_REGION=ap-south-1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./.localstack}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"

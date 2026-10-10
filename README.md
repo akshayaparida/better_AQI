@@ -4,17 +4,21 @@
 > Built for **Environmental Hacks (Bharat Builds Tour 2026 by WeMakeDevs & AWS)** • **Track 01: Air**
 
 [![CI Pipeline](https://img.shields.io/badge/CI%20Pipeline-GitHub%20Actions-blue?logo=githubactions)](.github/workflows/ci.yml)
-[![Backend Tests](https://img.shields.io/badge/backend%20tests-12%2F12%20passed-success?logo=pytest)](backend/tests/)
+[![Backend Tests](https://img.shields.io/badge/backend%20tests-14%2F14%20passed-success?logo=pytest)](backend/tests/)
 [![Frontend Tests](https://img.shields.io/badge/frontend%20tests-35%2F35%20passed-success?logo=vitest)](frontend/src/tests/)
-[![AWS Open Source](https://img.shields.io/badge/AWS%20Open%20Source-SAM%20CLI%20Validated-orange?logo=amazon-aws)](template.yaml)
+[![AWS Open Source](https://img.shields.io/badge/AWS%20Open%20Source-SAM%20CLI%20%7C%20Strands%20SDK%20%7C%20LocalStack-orange?logo=amazon-aws)](template.yaml)
 [![Code Hygiene](https://img.shields.io/badge/oxlint-0%20warnings-brightgreen)](frontend/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---
 
-> 🏆 **AWS Open Source Eligibility:**  
-> This project is built using **AWS SAM CLI** (validated via `sam validate`) and the **AWS Boto3 SDK**, qualifying 100% under the official WeMakeDevs & AWS hackathon rule:  
-> *"Build it open source on your machine (No AWS account, no card, no bill) — Serverless: SAM CLI"*.
+> 🏆 **AWS Open Source Eligibility (Triple-Qualified):**  
+> This project implements **three official AWS open-source tools** listed in the hackathon rubric (`wemakedevs.org/aws/env#credits`):
+> 1. **AWS Strands Agents SDK** (`strands-agents`): Autonomous multi-tool air health reasoning agent (*Category: Agents and AI*).
+> 2. **AWS SAM CLI** (`aws-sam-cli`): Serverless Application Model validated locally with `sam validate` (*Category: Serverless*).
+> 3. **LocalStack** (`docker-compose.localstack.yml`): Local emulation for Amazon DynamoDB and Amazon SNS (*Category: Serverless*).
+> 
+> *Fully qualifies under "BUILD IT: Open source, on your machine (No AWS account, no card, no bill)".*
 
 ---
 

@@ -228,3 +228,38 @@ async def test_worldwide_cities_aqi():
             assert "cpcb_category" in data["current"]
 
 
+@pytest.mark.anyio
+async def test_strands_agent_capabilities():
+    """Verify AWS Strands Agents SDK introspection and tool registry."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/api/agent/capabilities")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["framework"] == "AWS Strands Agents SDK"
+        assert len(data["registered_tools"]) == 3
+        tool_names = [t["name"] for t in data["registered_tools"]]
+        assert "check_live_air_quality" in tool_names
+        assert "evaluate_school_safety" in tool_names
+        assert "calculate_commute_inhalation" in tool_names
+
+
+@pytest.mark.anyio
+async def test_strands_agent_consult():
+    """Verify autonomous reasoning and tool execution using AWS Strands Agent."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        payload = {
+            "prompt": "Should our school hold morning sports today?",
+            "latitude": 28.6139,
+            "longitude": 77.2090,
+            "commute_mode": "bicycle",
+            "distance_km": 5.0,
+        }
+        resp = await client.post("/api/agent/consult", json=payload)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["status"] == "success"
+        assert "AWS Strands Agents SDK" in data["agent"]
+        assert "primary_focus" in data
+        assert "synthesis" in data
+        assert len(data["tool_executions"]) == 3
+        assert "recommendation_summary" in data

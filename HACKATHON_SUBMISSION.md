@@ -91,6 +91,13 @@ flowchart TD
    * **Hackathon Open Source Track Qualification:** Directly satisfies the official WeMakeDevs & AWS Environmental Hacks rule: *"Build it open source on your machine (No AWS account, no card, no bill) — Serverless: SAM CLI"*.
 8. **AWS Boto3 SDK (`backend/services/alert_service.py`):**
    * Official open-source AWS SDK for Python used for Amazon SNS alert dispatch and DynamoDB subscription persistence.
+9. **AWS Strands Agents SDK (`backend/services/strands_agent_service.py`):**
+   * Official AWS Open-Source AI Agent framework (`strands-agents`).
+   * Orchestrates multi-tool reasoning (`check_live_air_quality`, `evaluate_school_safety`, `calculate_commute_inhalation`) to produce synthesized health and route advisories.
+   * **Hackathon Track Qualification:** Directly satisfies the rubric's *"Agents and AI — Strands Agents SDK"* open-source category.
+10. **LocalStack Cloud Emulation (`docker-compose.localstack.yml`):**
+   * Official open-source AWS emulator listed under *"Serverless — LocalStack"*.
+   * Enables local emulation of Amazon DynamoDB and Amazon SNS with zero cloud costs.
 
 ---
 
@@ -98,7 +105,7 @@ flowchart TD
 
 To meet the engineering standards of top product organizations, `better_AQI` includes automated testing across the entire stack:
 
-* **Backend Test Suite (Pytest):** **12/12 Passing** (`test_api.py` covering healthcheck, telemetry ingestion, CPCB classification, smart commute route comparisons, stubble tracker, indoor CADR calculator, alert subscriptions, and OWASP defense-in-depth security headers).
+* **Backend Test Suite (Pytest):** **14/14 Passing** (`test_api.py` covering healthcheck, telemetry ingestion, CPCB classification, smart commute route comparisons, stubble tracker, indoor CADR calculator, alert subscriptions, OWASP security headers, worldwide geocoding, and **AWS Strands Agent capabilities & consultation**).
 * **Frontend Test Suite (Vitest + React Testing Library):** **35/35 Passing across 8 test suites** (`CommuteWidget.test.jsx`, `SchoolAdvisoryCard.test.jsx`, `IndoorPurifierCard.test.jsx`, `StubblePanel.test.jsx`, `AlertModal.test.jsx`, `CitizenResponsibilityCard.test.jsx`, `Navbar.test.jsx`, `GlobalCitySearch.test.jsx`).
 * **Static Code Analysis (`oxlint`):** **0 errors, 0 warnings** across all 22 files.
 * **Production Build (`vite build`):** Compiled in **424ms** with optimal bundle chunking.

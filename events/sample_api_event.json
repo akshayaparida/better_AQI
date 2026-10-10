@@ -1,0 +1,35 @@
+{
+  "version": "2.0",
+  "routeKey": "GET /health",
+  "rawPath": "/health",
+  "rawQueryString": "",
+  "headers": {
+    "accept": "*/*",
+    "content-length": "0",
+    "host": "localhost:8000",
+    "user-agent": "aws-sam-cli-local",
+    "x-amzn-trace-id": "Root=1-12345678-abcdef0123456789abcdef01",
+    "x-forwarded-for": "127.0.0.1",
+    "x-forwarded-port": "8000",
+    "x-forwarded-proto": "http"
+  },
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "better-aqi-api",
+    "domainName": "localhost:8000",
+    "domainPrefix": "localhost",
+    "http": {
+      "method": "GET",
+      "path": "/health",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "127.0.0.1",
+      "userAgent": "aws-sam-cli-local"
+    },
+    "requestId": "sam-local-req-001",
+    "routeKey": "GET /health",
+    "stage": "$default",
+    "time": "11/Oct/2026:01:00:00 +0000",
+    "timeEpoch": 1791680400000
+  },
+  "isBase64Encoded": false
+}

@@ -6,11 +6,18 @@ from config import logger
 
 
 def publish_to_sns(topic_arn: str, subject: str, message: str) -> Optional[str]:
-    """Publish alert message to Amazon SNS topic if AWS environment is configured."""
+    """Publish alert message to Amazon SNS topic (AWS Cloud or LocalStack)."""
     try:
         import boto3
         region = os.getenv("AWS_REGION", "ap-south-1")
-        sns = boto3.client("sns", region_name=region)
+        endpoint_url = os.getenv("AWS_ENDPOINT_URL") or os.getenv("LOCALSTACK_ENDPOINT")
+        client_kwargs = {"region_name": region}
+        if endpoint_url:
+            client_kwargs["endpoint_url"] = endpoint_url
+            client_kwargs["aws_access_key_id"] = os.getenv("AWS_ACCESS_KEY_ID", "test")
+            client_kwargs["aws_secret_access_key"] = os.getenv("AWS_SECRET_ACCESS_KEY", "test")
+
+        sns = boto3.client("sns", **client_kwargs)
         response = sns.publish(
             TopicArn=topic_arn,
             Subject=subject[:100],
@@ -66,7 +73,14 @@ def register_subscriber(sub: AlertSubscription) -> Dict[str, Any]:
         try:
             import boto3
             region = os.getenv("AWS_REGION", "ap-south-1")
-            sns = boto3.client("sns", region_name=region)
+            endpoint_url = os.getenv("AWS_ENDPOINT_URL") or os.getenv("LOCALSTACK_ENDPOINT")
+            client_kwargs = {"region_name": region}
+            if endpoint_url:
+                client_kwargs["endpoint_url"] = endpoint_url
+                client_kwargs["aws_access_key_id"] = os.getenv("AWS_ACCESS_KEY_ID", "test")
+                client_kwargs["aws_secret_access_key"] = os.getenv("AWS_SECRET_ACCESS_KEY", "test")
+
+            sns = boto3.client("sns", **client_kwargs)
             sns.subscribe(TopicArn=sns_arn, Protocol="email", Endpoint=sub.email)
             logger.info(f"Subscribed {sub.email} to AWS SNS Topic: {sns_arn}")
         except Exception as exc:
