@@ -85,8 +85,12 @@ flowchart TD
    * Scheduled event rule triggering the Lambda function once every hour to evaluate live telemetry against subscriber alert thresholds.
 6. **AWS Amplify Hosting:**
    * Global CI/CD hosting pipeline with fast CDN edge distribution for the React 19 frontend.
-7. **AWS SAM (`template.yaml`):**
-   * Declarative Infrastructure as Code (IaC) enabling 1-command reproducible cloud deployments.
+7. **AWS SAM CLI (`template.yaml`):**
+   * Official **AWS Open Source Tool** (Apache 2.0 licensed, `aws/aws-sam-cli`).
+   * Provides declarative Infrastructure as Code (IaC) enabling 1-command reproducible cloud deployments and local validation via `sam validate`.
+   * **Hackathon Open Source Track Qualification:** Directly satisfies the official WeMakeDevs & AWS Environmental Hacks rule: *"Build it open source on your machine (No AWS account, no card, no bill) — Serverless: SAM CLI"*.
+8. **AWS Boto3 SDK (`backend/services/alert_service.py`):**
+   * Official open-source AWS SDK for Python used for Amazon SNS alert dispatch and DynamoDB subscription persistence.
 
 ---
 

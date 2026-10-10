@@ -4,11 +4,17 @@
 > Built for **Environmental Hacks (Bharat Builds Tour 2026 by WeMakeDevs & AWS)** • **Track 01: Air**
 
 [![CI Pipeline](https://img.shields.io/badge/CI%20Pipeline-GitHub%20Actions-blue?logo=githubactions)](.github/workflows/ci.yml)
-[![Backend Tests](https://img.shields.io/badge/backend%20tests-9%2F9%20passed-success?logo=pytest)](backend/tests/)
-[![Frontend Tests](https://img.shields.io/badge/frontend%20tests-17%2F17%20passed-success?logo=vitest)](frontend/src/tests/)
+[![Backend Tests](https://img.shields.io/badge/backend%20tests-12%2F12%20passed-success?logo=pytest)](backend/tests/)
+[![Frontend Tests](https://img.shields.io/badge/frontend%20tests-35%2F35%20passed-success?logo=vitest)](frontend/src/tests/)
+[![AWS Open Source](https://img.shields.io/badge/AWS%20Open%20Source-SAM%20CLI%20Validated-orange?logo=amazon-aws)](template.yaml)
 [![Code Hygiene](https://img.shields.io/badge/oxlint-0%20warnings-brightgreen)](frontend/)
-[![AWS Architecture](https://img.shields.io/badge/AWS-Serverless%20SAM-orange?logo=amazon-aws)](template.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+---
+
+> 🏆 **AWS Open Source Eligibility:**  
+> This project is built using **AWS SAM CLI** (validated via `sam validate`) and the **AWS Boto3 SDK**, qualifying 100% under the official WeMakeDevs & AWS hackathon rule:  
+> *"Build it open source on your machine (No AWS account, no card, no bill) — Serverless: SAM CLI"*.
 
 ---
 
