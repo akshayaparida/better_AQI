@@ -72,8 +72,8 @@ def compare_routes_exposure(routes: List[RouteOption]) -> Dict[str, Any]:
     cigs_saved = round(dirtiest["cigarette_smoke_equivalent"] - cleanest["cigarette_smoke_equivalent"], 2)
 
     summary = (
-        f"Choosing '{cleanest['name']}' saves your lungs {percent_saved}% toxic PM2.5 exposure "
-        f"(sparing you the equivalent of {cigs_saved} cigarettes)."
+        f"Choosing '{cleanest['name']}' saves your lungs {percent_saved}% fine dust (PM2.5) exposure "
+        f"(sparing you the equivalent of {cigs_saved} passively smoked cigarettes)."
         if percent_saved > 0
         else f"'{cleanest['name']}' has the lowest exposure."
     )

@@ -70,16 +70,13 @@ export default function CommuteWidget({
   const [isDestOpen, setIsDestOpen] = useState(false);
   const [isRouteApplied, setIsRouteApplied] = useState(false);
 
-  const originContainerRef = useRef(null);
-  const destContainerRef = useRef(null);
+  const searchCardRef = useRef(null);
 
   // Close suggestion dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
-      if (originContainerRef.current && !originContainerRef.current.contains(event.target)) {
+      if (searchCardRef.current && !searchCardRef.current.contains(event.target)) {
         setIsOriginOpen(false);
-      }
-      if (destContainerRef.current && !destContainerRef.current.contains(event.target)) {
         setIsDestOpen(false);
       }
     }
@@ -119,6 +116,7 @@ export default function CommuteWidget({
         }
         setOriginSuggestions(combined);
         setIsOriginOpen(true);
+        setIsDestOpen(false);
       } catch (err) {
         console.error('Failed to search origin suggestions:', err);
       } finally {
@@ -161,6 +159,7 @@ export default function CommuteWidget({
         }
         setDestinationSuggestions(combined);
         setIsDestOpen(true);
+        setIsOriginOpen(false);
       } catch (err) {
         console.error('Failed to search destination suggestions:', err);
       } finally {
@@ -349,6 +348,8 @@ export default function CommuteWidget({
   };
 
   const handleSwap = () => {
+    setIsOriginOpen(false);
+    setIsDestOpen(false);
     if (onEndpointsChange) {
       const fallbackOrigin = hubs[0]?.id || 'connaught_place';
       const newOriginId = destinationId;
@@ -409,11 +410,15 @@ export default function CommuteWidget({
             fontWeight: '700',
             padding: '4px 10px',
             borderRadius: '9999px',
-            background: 'rgba(16, 185, 129, 0.2)',
+            background: 'rgba(16, 185, 129, 0.18)',
             color: '#10B981',
             border: '1px solid rgba(16, 185, 129, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
           }}>
-            -{analysis.percent_inhalation_reduction}% Toxic Inhalation
+            <span>🛡️</span>
+            <span>{analysis.percent_inhalation_reduction}% Cleaner Air Exposure</span>
           </span>
         )}
       </div>
@@ -457,284 +462,300 @@ export default function CommuteWidget({
           </button>
         </div>
 
-        {/* Dual Type-Ahead Inputs with Visual Connector Line */}
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          {/* Left Ride Connector Visual Dots */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            height: '84px',
-            padding: '6px 0',
-            flexShrink: 0,
-          }}>
-            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 8px rgba(16, 185, 129, 0.6)' }} />
-            <div style={{ width: '2px', flex: 1, margin: '4px 0', background: 'repeating-linear-gradient(to bottom, #6B7280, #6B7280 3px, transparent 3px, transparent 6px)' }} />
-            <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#EF4444', boxShadow: '0 0 8px rgba(239, 68, 68, 0.6)' }} />
-          </div>
-
-          {/* Inputs Column */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {/* Origin Type-Ahead Search Input */}
-            <div style={{ position: 'relative' }} ref={originContainerRef}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <div style={{ position: 'relative', flex: 1 }}>
-                  <input
-                    type="text"
-                    id="commute-origin-input"
-                    value={originQuery}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setOriginQuery(val);
-                      if (!val || val.trim().length < 2) {
-                        setOriginSuggestions([]);
-                        setIsOriginOpen(false);
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleOriginSubmit();
-                      }
-                    }}
-                    onBlur={handleOriginSubmit}
-                    onFocus={() => { if (originSuggestions.length > 0) setIsOriginOpen(true); }}
-                    placeholder="Pickup location, university, or village (e.g. DTU, BITS, Kukas, Hawa Mahal)..."
-                    style={{
-                      width: '100%',
-                      padding: '9px 12px',
-                      borderRadius: '8px',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid var(--border-color)',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.84rem',
-                      outline: 'none',
-                    }}
-                  />
-                  {isSearchingOrigin && (
-                    <Loader2 size={14} className="animate-spin" style={{ position: 'absolute', right: '10px', top: '11px', color: 'var(--text-muted)' }} />
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  id="btn-use-gps-origin"
-                  onClick={handleUseCurrentGps}
-                  className="btn-secondary"
-                  title="Use current GPS position"
-                  style={{
-                    padding: '8px 10px',
-                    fontSize: '0.75rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    borderRadius: '8px',
-                    whiteSpace: 'nowrap',
-                    background: originId === 'current_location' ? 'rgba(16, 185, 129, 0.2)' : undefined,
-                    borderColor: originId === 'current_location' ? '#10B981' : undefined,
-                    color: originId === 'current_location' ? '#10B981' : undefined,
-                  }}
-                >
-                  <Navigation size={12} />
-                  <span>GPS</span>
-                </button>
-              </div>
-
-              {/* Origin Autocomplete Suggestions */}
-              {isOriginOpen && originSuggestions.length > 0 && (
-                <div style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 4px)',
-                  left: 0,
-                  right: 0,
-                  background: 'rgba(15, 23, 42, 0.95)',
-                  backdropFilter: 'blur(16px)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  padding: '4px',
-                  zIndex: 150,
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-                  maxHeight: '200px',
-                  overflowY: 'auto',
-                }}>
-                  {originSuggestions.map((sug, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      className="commute-suggestion-item"
-                      onClick={() => handleSelectOriginSuggestion(sug)}
-                      style={{
-                        width: '100%',
-                        padding: '8px 10px',
-                        textAlign: 'left',
-                        background: 'transparent',
-                        border: 'none',
-                        borderRadius: '6px',
-                        color: 'var(--text-primary)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                        fontSize: '0.8rem',
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                    >
-                      <MapPin size={13} color="#10B981" />
-                      <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        <span style={{ fontWeight: '600' }}>{sug.name}</span>
-                        {sug.type && (
-                          <span style={{
-                            fontSize: '0.68rem',
-                            padding: '1px 5px',
-                            marginLeft: '6px',
-                            borderRadius: '4px',
-                            background: 'rgba(16, 185, 129, 0.2)',
-                            color: '#10B981',
-                            border: '1px solid rgba(16, 185, 129, 0.3)',
-                          }}>
-                            {sug.type}
-                          </span>
-                        )}
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginLeft: '6px' }}>
-                          {sug.admin1 ? `${sug.admin1}, ` : ''}{sug.country || ''}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
+        {/* Dual Type-Ahead Inputs with Visual Connector Line & Clean Non-Overlapping Suggestions */}
+        <div style={{ position: 'relative' }} ref={searchCardRef}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            {/* Left Ride Connector Visual Dots */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              height: '84px',
+              padding: '6px 0',
+              flexShrink: 0,
+            }}>
+              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 8px rgba(16, 185, 129, 0.6)' }} />
+              <div style={{ width: '2px', flex: 1, margin: '4px 0', background: 'repeating-linear-gradient(to bottom, #6B7280, #6B7280 3px, transparent 3px, transparent 6px)' }} />
+              <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#EF4444', boxShadow: '0 0 8px rgba(239, 68, 68, 0.6)' }} />
             </div>
 
-            {/* Destination Type-Ahead Search Input */}
-            <div style={{ position: 'relative' }} ref={destContainerRef}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <div style={{ position: 'relative', flex: 1 }}>
-                  <input
-                    type="text"
-                    id="commute-destination-input"
-                    value={destinationQuery}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setDestinationQuery(val);
-                      if (!val || val.trim().length < 2) {
-                        setDestinationSuggestions([]);
+            {/* Inputs Column */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {/* Origin Type-Ahead Search Input */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ position: 'relative', flex: 1 }}>
+                    <input
+                      type="text"
+                      id="commute-origin-input"
+                      value={originQuery}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setOriginQuery(val);
                         setIsDestOpen(false);
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleDestSubmit();
-                      }
-                    }}
-                    onBlur={handleDestSubmit}
-                    onFocus={() => { if (destinationSuggestions.length > 0) setIsDestOpen(true); }}
-                    placeholder="Drop-off destination, university, or village (e.g. Amer Fort, Airport, DTU)..."
-                    style={{
-                      width: '100%',
-                      padding: '9px 12px',
-                      borderRadius: '8px',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid var(--border-color)',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.84rem',
-                      outline: 'none',
-                    }}
-                  />
-                  {isSearchingDestination && (
-                    <Loader2 size={14} className="animate-spin" style={{ position: 'absolute', right: '10px', top: '11px', color: 'var(--text-muted)' }} />
-                  )}
-                </div>
+                        if (!val || val.trim().length < 2) {
+                          setOriginSuggestions([]);
+                          setIsOriginOpen(false);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                          setIsOriginOpen(false);
+                        } else if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleOriginSubmit();
+                        }
+                      }}
+                      onBlur={handleOriginSubmit}
+                      onFocus={() => {
+                        setIsDestOpen(false);
+                        if (originSuggestions.length > 0) setIsOriginOpen(true);
+                      }}
+                      placeholder="Pickup location, university, or village (e.g. DTU, BITS, Kukas, Hawa Mahal)..."
+                      style={{
+                        width: '100%',
+                        padding: '9px 12px',
+                        borderRadius: '8px',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid var(--border-color)',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.84rem',
+                        outline: 'none',
+                      }}
+                    />
+                    {isSearchingOrigin && (
+                      <Loader2 size={14} className="animate-spin" style={{ position: 'absolute', right: '10px', top: '11px', color: 'var(--text-muted)' }} />
+                    )}
+                  </div>
 
+                  <button
+                    type="button"
+                    id="btn-use-gps-origin"
+                    onClick={() => {
+                      setIsOriginOpen(false);
+                      setIsDestOpen(false);
+                      handleUseCurrentGps();
+                    }}
+                    className="btn-secondary"
+                    title="Use current GPS position"
+                    style={{
+                      padding: '8px 10px',
+                      fontSize: '0.75rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      borderRadius: '8px',
+                      whiteSpace: 'nowrap',
+                      background: originId === 'current_location' ? 'rgba(16, 185, 129, 0.2)' : undefined,
+                      borderColor: originId === 'current_location' ? '#10B981' : undefined,
+                      color: originId === 'current_location' ? '#10B981' : undefined,
+                    }}
+                  >
+                    <Navigation size={12} />
+                    <span>GPS</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Destination Type-Ahead Search Input */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ position: 'relative', flex: 1 }}>
+                    <input
+                      type="text"
+                      id="commute-destination-input"
+                      value={destinationQuery}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setDestinationQuery(val);
+                        setIsOriginOpen(false);
+                        if (!val || val.trim().length < 2) {
+                          setDestinationSuggestions([]);
+                          setIsDestOpen(false);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                          setIsDestOpen(false);
+                        } else if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleDestSubmit();
+                        }
+                      }}
+                      onBlur={handleDestSubmit}
+                      onFocus={() => {
+                        setIsOriginOpen(false);
+                        if (destinationSuggestions.length > 0) setIsDestOpen(true);
+                      }}
+                      placeholder="Drop-off destination, university, or village (e.g. Amer Fort, Airport, DTU)..."
+                      style={{
+                        width: '100%',
+                        padding: '9px 12px',
+                        borderRadius: '8px',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid var(--border-color)',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.84rem',
+                        outline: 'none',
+                      }}
+                    />
+                    {isSearchingDestination && (
+                      <Loader2 size={14} className="animate-spin" style={{ position: 'absolute', right: '10px', top: '11px', color: 'var(--text-muted)' }} />
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    id="btn-apply-route"
+                    onClick={() => {
+                      setIsOriginOpen(false);
+                      setIsDestOpen(false);
+                      handleApplyBoth();
+                    }}
+                    className="btn-primary"
+                    title="Apply typed route"
+                    style={{
+                      padding: '8px 12px',
+                      fontSize: '0.75rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      borderRadius: '8px',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {isRouteApplied ? <Check size={13} /> : <Navigation size={13} />}
+                    <span>{isRouteApplied ? 'Applied' : 'Apply'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Dedicated Non-Overlapping Suggestions Dropdown Panel - Anchored cleanly below BOTH inputs */}
+          {((isOriginOpen && originSuggestions.length > 0) || (isDestOpen && destinationSuggestions.length > 0)) && (
+            <div style={{
+              position: 'absolute',
+              top: 'calc(100% + 8px)',
+              left: 0,
+              right: 0,
+              background: 'rgba(15, 23, 42, 0.96)',
+              backdropFilter: 'blur(16px)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '10px',
+              padding: '6px',
+              zIndex: 200,
+              boxShadow: '0 12px 30px rgba(0, 0, 0, 0.6)',
+              maxHeight: '220px',
+              overflowY: 'auto',
+            }}>
+              {/* Friendly Header with Instant Dismiss */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '6px 10px',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                marginBottom: '4px',
+              }}>
+                <span style={{
+                  fontSize: '0.74rem',
+                  color: isOriginOpen ? '#10B981' : '#F87171',
+                  fontWeight: '700',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}>
+                  <MapPin size={13} />
+                  <span>
+                    {isOriginOpen ? 'Suggested Pickup Locations' : 'Suggested Destination Locations'}
+                  </span>
+                </span>
                 <button
                   type="button"
-                  id="btn-apply-route"
-                  onClick={handleApplyBoth}
-                  className="btn-primary"
-                  title="Apply typed route"
+                  onClick={() => {
+                    setIsOriginOpen(false);
+                    setIsDestOpen(false);
+                  }}
                   style={{
-                    padding: '8px 12px',
-                    fontSize: '0.75rem',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: 'none',
+                    borderRadius: '4px',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.7rem',
+                    padding: '3px 8px',
+                    cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '4px',
-                    borderRadius: '8px',
-                    whiteSpace: 'nowrap',
                   }}
+                  title="Close suggestions"
                 >
-                  {isRouteApplied ? <Check size={13} /> : <Navigation size={13} />}
-                  <span>{isRouteApplied ? 'Applied' : 'Apply'}</span>
+                  ✕ Close (Esc)
                 </button>
               </div>
 
-              {/* Destination Autocomplete Suggestions */}
-              {isDestOpen && destinationSuggestions.length > 0 && (
-                <div style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 4px)',
-                  left: 0,
-                  right: 0,
-                  background: 'rgba(15, 23, 42, 0.95)',
-                  backdropFilter: 'blur(16px)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  padding: '4px',
-                  zIndex: 150,
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-                  maxHeight: '200px',
-                  overflowY: 'auto',
-                }}>
-                  {destinationSuggestions.map((sug, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      className="commute-suggestion-item"
-                      onClick={() => handleSelectDestSuggestion(sug)}
-                      style={{
-                        width: '100%',
-                        padding: '8px 10px',
-                        textAlign: 'left',
-                        background: 'transparent',
-                        border: 'none',
-                        borderRadius: '6px',
-                        color: 'var(--text-primary)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                        fontSize: '0.8rem',
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                    >
-                      <MapPin size={13} color="#EF4444" />
-                      <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        <span style={{ fontWeight: '600' }}>{sug.name}</span>
-                        {sug.type && (
-                          <span style={{
-                            fontSize: '0.68rem',
-                            padding: '1px 5px',
-                            marginLeft: '6px',
-                            borderRadius: '4px',
-                            background: 'rgba(239, 68, 68, 0.2)',
-                            color: '#F87171',
-                            border: '1px solid rgba(239, 68, 68, 0.3)',
-                          }}>
-                            {sug.type}
-                          </span>
-                        )}
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginLeft: '6px' }}>
-                          {sug.admin1 ? `${sug.admin1}, ` : ''}{sug.country || ''}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
+              {/* Suggestions List */}
+              {(isOriginOpen ? originSuggestions : destinationSuggestions).map((sug, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className="commute-suggestion-item"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    if (isOriginOpen) handleSelectOriginSuggestion(sug);
+                    else handleSelectDestSuggestion(sug);
+                  }}
+                  onClick={() => {
+                    if (isOriginOpen) handleSelectOriginSuggestion(sug);
+                    else handleSelectDestSuggestion(sug);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '8px 10px',
+                    textAlign: 'left',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    transition: 'background 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                >
+                  <MapPin size={13} color={isOriginOpen ? '#10B981' : '#EF4444'} style={{ flexShrink: 0 }} />
+                  <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                    <span style={{ fontWeight: '600' }}>{sug.name}</span>
+                    {sug.type && (
+                      <span style={{
+                        fontSize: '0.68rem',
+                        padding: '1px 6px',
+                        marginLeft: '6px',
+                        borderRadius: '4px',
+                        background: isOriginOpen ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                        color: isOriginOpen ? '#10B981' : '#F87171',
+                        border: `1px solid ${isOriginOpen ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+                      }}>
+                        {sug.type}
+                      </span>
+                    )}
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginLeft: '6px' }}>
+                      {sug.admin1 ? `${sug.admin1}, ` : ''}{sug.country || ''}
+                    </span>
+                  </div>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                    Select
+                  </span>
+                </button>
+              ))}
             </div>
-          </div>
+          )}
         </div>
 
         {/* Quick Landmark Chips for Active City */}
@@ -936,11 +957,12 @@ export default function CommuteWidget({
         }}>
           <ShieldCheck size={28} color="#10B981" style={{ flexShrink: 0 }} />
           <div>
-            <h4 style={{ fontSize: '0.92rem', color: '#10B981', margin: 0 }}>
-              {analysis.summary}
+            <h4 style={{ fontSize: '0.92rem', color: '#10B981', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>🌿</span>
+              <span>{analysis.summary.replace(/toxic PM2\.5 exposure/i, 'fine dust (PM2.5) exposure')}</span>
             </h4>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
-              Spares your lungs from inhaling the equivalent of <b>{analysis.cigarettes_saved} passively smoked cigarettes</b>.
+              Health benefit: Spares your lungs from inhaling the equivalent of <b>{analysis.cigarettes_saved} passively smoked cigarettes</b>.
             </p>
           </div>
         </div>
@@ -964,7 +986,7 @@ export default function CommuteWidget({
               }}
             >
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                   <span style={{
                     width: '10px',
                     height: '10px',
@@ -974,6 +996,31 @@ export default function CommuteWidget({
                   <span style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--text-primary)' }}>
                     {route.name}
                   </span>
+                  {isCleanest ? (
+                    <span style={{
+                      fontSize: '0.7rem',
+                      fontWeight: '600',
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                      background: 'rgba(16, 185, 129, 0.2)',
+                      color: '#10B981',
+                      border: '1px solid rgba(16, 185, 129, 0.35)',
+                    }}>
+                      🌿 Clean Air Path (Recommended)
+                    </span>
+                  ) : (
+                    <span style={{
+                      fontSize: '0.7rem',
+                      fontWeight: '600',
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                      background: 'rgba(239, 68, 68, 0.15)',
+                      color: '#F87171',
+                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                    }}>
+                      ⚠️ High Traffic Corridor (Heavier Dust Exposure)
+                    </span>
+                  )}
                 </div>
                 <div style={{ display: 'flex', gap: '12px', marginTop: '6px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                   <span><Clock size={12} style={{ display: 'inline', marginRight: '4px' }} />{route.duration_minutes} min</span>
@@ -987,7 +1034,7 @@ export default function CommuteWidget({
                   {route.inhaled_pm25_micrograms} µg
                 </span>
                 <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  ≈ {route.cigarette_smoke_equivalent} cigs
+                  ≈ {route.cigarette_smoke_equivalent} cigs equiv. fine dust
                 </span>
               </div>
             </div>

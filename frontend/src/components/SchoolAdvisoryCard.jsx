@@ -121,15 +121,15 @@ export default function SchoolAdvisoryCard({ advisoryData }) {
       <div style={{
         padding: '12px 16px',
         borderRadius: 'var(--radius-md)',
-        background: 'rgba(239, 68, 68, 0.1)',
-        border: '1px solid rgba(239, 68, 68, 0.3)',
+        background: 'rgba(245, 158, 11, 0.1)',
+        border: '1px solid rgba(245, 158, 11, 0.35)',
         display: 'flex',
         alignItems: 'center',
         gap: '10px',
       }}>
-        <AlertTriangle size={18} color="#EF4444" style={{ flexShrink: 0 }} />
-        <span style={{ fontSize: '0.82rem', color: '#EF4444', fontWeight: '500' }}>
-          {vulnerable_students_alert}
+        <AlertTriangle size={18} color="#F59E0B" style={{ flexShrink: 0 }} />
+        <span style={{ fontSize: '0.82rem', color: '#FCD34D', fontWeight: '500' }}>
+          <strong style={{ color: '#F59E0B' }}>Gentle Health Advisory:</strong> {vulnerable_students_alert}
         </span>
       </div>
     </div>
