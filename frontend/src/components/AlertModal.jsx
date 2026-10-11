@@ -1,56 +1,11 @@
-import React, { useState } from 'react';
-import { X, Bell, CheckCircle2, Volume2 } from 'lucide-react';
-
-export function playAlertSiren() {
-  try {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) return;
-    const ctx = new AudioContextClass();
-    
-    // First alert beep (880 Hz)
-    const osc1 = ctx.createOscillator();
-    const gain1 = ctx.createGain();
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(880, ctx.currentTime);
-    gain1.gain.setValueAtTime(0.25, ctx.currentTime);
-    gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.22);
-    osc1.connect(gain1);
-    gain1.connect(ctx.destination);
-    osc1.start(ctx.currentTime);
-    osc1.stop(ctx.currentTime + 0.22);
-
-    // Second higher alert beep (1046 Hz - C6)
-    const osc2 = ctx.createOscillator();
-    const gain2 = ctx.createGain();
-    osc2.type = 'sine';
-    osc2.frequency.setValueAtTime(1046, ctx.currentTime + 0.25);
-    gain2.gain.setValueAtTime(0.3, ctx.currentTime + 0.25);
-    gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
-    osc2.connect(gain2);
-    gain2.connect(ctx.destination);
-    osc2.start(ctx.currentTime + 0.25);
-    osc2.stop(ctx.currentTime + 0.6);
-  } catch (err) {
-    console.warn('Web Audio playback error:', err);
-  }
-}
-
-export function triggerBrowserNotification(title, body) {
-  if (typeof window === 'undefined' || !('Notification' in window)) return;
-  if (Notification.permission === 'granted') {
-    try {
-      new Notification(title, { body, tag: 'better-aqi-spike' });
-    } catch {}
-  } else if (Notification.permission !== 'denied') {
-    Notification.requestPermission().then((permission) => {
-      if (permission === 'granted') {
-        try {
-          new Notification(title, { body, tag: 'better-aqi-spike' });
-        } catch {}
-      }
-    });
-  }
-}
+import React, { useState, useEffect } from 'react';
+import { X, Bell, CheckCircle2, Volume2, VolumeX } from 'lucide-react';
+import {
+  startContinuousHighRiseSiren,
+  stopAlertSiren,
+  isSirenActive,
+  triggerBrowserNotification,
+} from '../utils/sirenAudio';
 
 export default function AlertModal({ isOpen, onClose }) {
   const [email, setEmail] = useState('');
@@ -59,18 +14,34 @@ export default function AlertModal({ isOpen, onClose }) {
   const [threshold, setThreshold] = useState('90');
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [testedAudio, setTestedAudio] = useState(false);
+  const [isAlarmPlaying, setIsAlarmPlaying] = useState(isSirenActive);
+  const [autoAlarmArmed, setAutoAlarmArmed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('auto_siren_enabled') === 'true';
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const handleState = (e) => setIsAlarmPlaying(Boolean(e.detail?.active));
+      window.addEventListener('aqi-siren-state-change', handleState);
+      return () => window.removeEventListener('aqi-siren-state-change', handleState);
+    }
+  }, []);
 
   if (!isOpen) return null;
 
-  const handleTestSiren = () => {
-    playAlertSiren();
-    triggerBrowserNotification(
-      '🚨 better_AQI Emergency Air Alert',
-      `PM2.5 spike detected in ${location}! Hazardous air levels breach threshold (${threshold} µg/m³).`
-    );
-    setTestedAudio(true);
-    setTimeout(() => setTestedAudio(false), 3000);
+  const handleToggleSiren = () => {
+    if (isAlarmPlaying) {
+      stopAlertSiren();
+    } else {
+      startContinuousHighRiseSiren();
+      triggerBrowserNotification(
+        '🚨 better_AQI Hazardous Air Alarm Active',
+        `Continuous emergency siren sounding for ${location}! Threshold: ${threshold} µg/m³.`
+      );
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -93,17 +64,19 @@ export default function AlertModal({ isOpen, onClose }) {
 
       if (res.ok) {
         const data = await res.json();
-        // Play siren and trigger push notification
-        playAlertSiren();
+        if (autoAlarmArmed) {
+          startContinuousHighRiseSiren();
+        }
         triggerBrowserNotification(
           '🚨 better_AQI Alert Protocol Activated',
           `Automated monitoring active for ${location} (PM2.5 > ${threshold} µg/m³).`
         );
-        setStatus({ success: true, message: data.message });
+        setStatus({ success: true, message: data?.message || 'Subscription active.' });
       } else {
         setStatus({ success: false, message: 'Failed to subscribe. Please verify your email.' });
       }
-    } catch {
+    } catch (err) {
+      console.error('handleSubmit error:', err);
       setStatus({ success: false, message: 'Server communication error.' });
     } finally {
       setLoading(false);
@@ -192,23 +165,32 @@ export default function AlertModal({ isOpen, onClose }) {
             </div>
 
             <button
-              onClick={handleTestSiren}
+              onClick={handleToggleSiren}
               type="button"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '6px 14px',
+                gap: '8px',
+                padding: '8px 16px',
                 borderRadius: '6px',
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid var(--border-color)',
+                background: isAlarmPlaying ? '#DC2626' : 'rgba(255, 255, 255, 0.08)',
+                border: isAlarmPlaying ? '1px solid #EF4444' : '1px solid var(--border-color)',
                 color: '#FFFFFF',
-                fontSize: '0.8rem',
+                fontSize: '0.85rem',
+                fontWeight: isAlarmPlaying ? '700' : '500',
                 cursor: 'pointer',
                 marginBottom: '10px',
               }}
             >
-              <Volume2 size={14} color="#10B981" /> Replay Emergency Siren
+              {isAlarmPlaying ? (
+                <>
+                  <VolumeX size={16} /> ⏹️ STOP / SILENCE ALARM
+                </>
+              ) : (
+                <>
+                  <Volume2 size={16} color="#10B981" /> 🚨 Test High-Rise Siren
+                </>
+              )}
             </button>
 
             <button
@@ -311,40 +293,83 @@ export default function AlertModal({ isOpen, onClose }) {
             </div>
 
             <div style={{
-              padding: '12px',
+              padding: '14px',
               borderRadius: '8px',
-              background: 'rgba(255, 255, 255, 0.03)',
-              border: '1px solid var(--border-color)',
+              background: isAlarmPlaying ? 'rgba(220, 38, 38, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+              border: isAlarmPlaying ? '1px solid rgba(220, 38, 38, 0.5)' : '1px solid var(--border-color)',
               display: 'flex',
               flexDirection: 'column',
-              gap: '6px',
+              gap: '10px',
+              transition: 'all 0.2s ease',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Audio & Push Verification</span>
-                <span style={{ fontSize: '0.7rem', color: '#10B981' }}>Web Audio API</span>
+                <span style={{ fontSize: '0.78rem', color: '#FFFFFF', fontWeight: '600' }}>
+                  Emergency High-Rise Siren Alarm
+                </span>
+                <span style={{
+                  fontSize: '0.7rem',
+                  color: isAlarmPlaying ? '#EF4444' : '#10B981',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                }}>
+                  {isAlarmPlaying ? '● SIREN SOUNDING' : 'Web Audio API'}
+                </span>
               </div>
+
               <button
                 type="button"
-                onClick={handleTestSiren}
+                onClick={handleToggleSiren}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '8px',
-                  padding: '9px 12px',
+                  padding: '11px 14px',
                   borderRadius: '6px',
-                  background: testedAudio ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.12)',
-                  border: testedAudio ? '1px solid #10B981' : '1px solid rgba(239, 68, 68, 0.35)',
-                  color: testedAudio ? '#10B981' : '#F87171',
+                  background: isAlarmPlaying ? '#DC2626' : 'rgba(239, 68, 68, 0.15)',
+                  border: isAlarmPlaying ? '2px solid #EF4444' : '1px solid rgba(239, 68, 68, 0.4)',
+                  color: isAlarmPlaying ? '#FFFFFF' : '#F87171',
                   cursor: 'pointer',
-                  fontSize: '0.8rem',
-                  fontWeight: '600',
+                  fontSize: '0.84rem',
+                  fontWeight: '700',
                   transition: 'all 0.2s ease',
+                  boxShadow: isAlarmPlaying ? '0 0 16px rgba(220, 38, 38, 0.5)' : 'none',
                 }}
               >
-                <Volume2 size={16} />
-                {testedAudio ? '🔊 Siren & Notification Triggered!' : '🔊 Test Emergency Siren & Sound Alert'}
+                {isAlarmPlaying ? (
+                  <>
+                    <VolumeX size={18} /> ⏹️ STOP / SILENCE SIREN
+                  </>
+                ) : (
+                  <>
+                    <Volume2 size={18} /> 🚨 Start Continuous High-Rise Siren
+                  </>
+                )}
               </button>
+
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+                color: 'var(--text-secondary)',
+                marginTop: '2px',
+              }}>
+                <input
+                  type="checkbox"
+                  checked={autoAlarmArmed}
+                  onChange={(e) => {
+                    setAutoAlarmArmed(e.target.checked);
+                    if (typeof window !== 'undefined') {
+                      localStorage.setItem('auto_siren_enabled', e.target.checked ? 'true' : 'false');
+                      localStorage.setItem('auto_siren_threshold', threshold);
+                    }
+                  }}
+                  style={{ accentColor: '#EF4444', cursor: 'pointer' }}
+                />
+                Sound alarm automatically until stopped when live AQI breaches threshold
+              </label>
             </div>
 
             {status && !status.success && (

@@ -9,6 +9,8 @@ import IndoorPurifierCard from './components/IndoorPurifierCard';
 import StubblePanel from './components/StubblePanel';
 import CitizenResponsibilityCard from './components/CitizenResponsibilityCard';
 import AlertModal from './components/AlertModal';
+import EmergencySirenBanner from './components/EmergencySirenBanner';
+import { startContinuousHighRiseSiren } from './utils/sirenAudio';
 import { Gauge, HeartHandshake } from 'lucide-react';
 
 function getHubsForCity(city) {
@@ -255,10 +257,24 @@ export default function App() {
     loadCommute();
   }, [selectedTransitMode, originHubId, destinationHubId, customOrigin, customDestination, userLocation, activeCity]);
 
+  // Continuous High-Rise Siren Auto-Trigger on Hazardous AQI breach
+  useEffect(() => {
+    if (aqiData?.current?.pm2_5 && typeof window !== 'undefined') {
+      const isAutoArmed = localStorage.getItem('auto_siren_enabled') === 'true';
+      const autoThreshold = Number(localStorage.getItem('auto_siren_threshold') || '90');
+      if (isAutoArmed && aqiData.current.pm2_5 >= autoThreshold) {
+        startContinuousHighRiseSiren();
+      }
+    }
+  }, [aqiData]);
+
   const current = aqiData?.current;
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-primary)' }}>
+      {/* High-Rise Emergency Alarm Persistent Banner */}
+      <EmergencySirenBanner />
+
       {/* Navigation */}
       <Navbar
         activeTab={activeTab}
