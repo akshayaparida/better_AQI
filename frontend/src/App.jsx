@@ -8,10 +8,11 @@ import SchoolAdvisoryCard from './components/SchoolAdvisoryCard';
 import IndoorPurifierCard from './components/IndoorPurifierCard';
 import StubblePanel from './components/StubblePanel';
 import CitizenResponsibilityCard from './components/CitizenResponsibilityCard';
+import AiAirAdvisorCard from './components/AiAirAdvisorCard';
 import AlertModal from './components/AlertModal';
 import EmergencySirenBanner from './components/EmergencySirenBanner';
 import { startContinuousHighRiseSiren, stopAlertSiren, unlockAudioContext } from './utils/sirenAudio';
-import { Gauge, HeartHandshake } from 'lucide-react';
+import { Gauge, HeartHandshake, Sparkles } from 'lucide-react';
 
 function getHubsForCity(city) {
   if (!city) return [];
@@ -488,6 +489,54 @@ export default function App() {
                     <span>→</span>
                   </button>
                 </div>
+
+                {/* AI Air Intelligence Advisor Callout */}
+                <div
+                  className="glass-panel"
+                  style={{
+                    padding: '16px 20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(59, 130, 246, 0.09) 100%)',
+                    border: '1px solid rgba(139, 92, 246, 0.35)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ padding: '8px', background: 'rgba(139, 92, 246, 0.25)', borderRadius: '10px', color: '#A78BFA' }}>
+                      <Sparkles size={22} />
+                    </div>
+                    <div>
+                      <h4 style={{ fontSize: '0.94rem', margin: 0, color: 'var(--text-primary)' }}>
+                        AI Air Intelligence Advisor
+                      </h4>
+                      <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
+                        Powered by AWS Strands Agents SDK. Autonomous multi-tool reasoning on school safety, exercise risk & clean windows.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    id="btn-open-ai-advisor"
+                    onClick={() => setActiveTab('ai_advisor')}
+                    className="btn-primary"
+                    style={{
+                      padding: '7px 16px',
+                      fontSize: '0.8rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: 'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)',
+                      border: 'none',
+                    }}
+                  >
+                    <span>Consult AI Advisor</span>
+                    <span>→</span>
+                  </button>
+                </div>
               </div>
             )}
 
@@ -527,6 +576,10 @@ export default function App() {
 
             {activeTab === 'citizen' && (
               <CitizenResponsibilityCard />
+            )}
+
+            {activeTab === 'ai_advisor' && (
+              <AiAirAdvisorCard activeCity={activeCity} aqiData={aqiData} />
             )}
           </section>
         </div>
