@@ -106,9 +106,10 @@ flowchart TD
 To meet the engineering standards of top product organizations, `better_AQI` includes automated testing across the entire stack:
 
 * **Backend Test Suite (Pytest):** **14/14 Passing** (`test_api.py` covering healthcheck, telemetry ingestion, CPCB classification, smart commute route comparisons, stubble tracker, indoor CADR calculator, alert subscriptions, OWASP security headers, worldwide geocoding, and **AWS Strands Agent capabilities & consultation**).
-* **Frontend Test Suite (Vitest + React Testing Library):** **35/35 Passing across 8 test suites** (`CommuteWidget.test.jsx`, `SchoolAdvisoryCard.test.jsx`, `IndoorPurifierCard.test.jsx`, `StubblePanel.test.jsx`, `AlertModal.test.jsx`, `CitizenResponsibilityCard.test.jsx`, `Navbar.test.jsx`, `GlobalCitySearch.test.jsx`).
-* **Static Code Analysis (`oxlint`):** **0 errors, 0 warnings** across all 22 files.
-* **Production Build (`vite build`):** Compiled in **424ms** with optimal bundle chunking.
+* **Frontend Test Suite (Vitest + React Testing Library):** **39/39 Passing across 9 test suites** (`AiAirAdvisorCard.test.jsx`, `CommuteWidget.test.jsx`, `SchoolAdvisoryCard.test.jsx`, `IndoorPurifierCard.test.jsx`, `StubblePanel.test.jsx`, `AlertModal.test.jsx`, `CitizenResponsibilityCard.test.jsx`, `Navbar.test.jsx`, `GlobalCitySearch.test.jsx`).
+* **Static Code Analysis (`oxlint`):** **0 errors, 0 warnings** across all 26 files.
+* **Production Build (`vite build`):** Compiled in **651ms** with optimal bundle chunking.
+* **Infrastructure as Code Validation (`sam validate --lint`):** Validated cleanly with zero errors.
 * **CI/CD Automation (GitHub Actions):** Continuous Integration pipeline ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) automatically verifies tests, linting, and compilation on every git push.
 * **End-to-End Browser Verification:** Fully verified using automated Chromium subagent across all tabs and modals; recorded session video preserved in project artifacts.
 

@@ -12,7 +12,6 @@ Globals:
     Environment:
       Variables:
         APP_NAME: "better_AQI API (AWS Lambda)"
-        AWS_REGION: !Ref "AWS::Region"
         DYNAMODB_TABLE_NAME: !Ref SubscriptionsTable
         AWS_SNS_TOPIC_ARN: !Ref SpikeAlertsTopic
 

@@ -5,7 +5,7 @@
 
 [![CI Pipeline](https://img.shields.io/badge/CI%20Pipeline-GitHub%20Actions-blue?logo=githubactions)](.github/workflows/ci.yml)
 [![Backend Tests](https://img.shields.io/badge/backend%20tests-14%2F14%20passed-success?logo=pytest)](backend/tests/)
-[![Frontend Tests](https://img.shields.io/badge/frontend%20tests-35%2F35%20passed-success?logo=vitest)](frontend/src/tests/)
+[![Frontend Tests](https://img.shields.io/badge/frontend%20tests-39%2F39%20passed-success?logo=vitest)](frontend/src/tests/)
 [![AWS Open Source](https://img.shields.io/badge/AWS%20Open%20Source-SAM%20CLI%20%7C%20Strands%20SDK%20%7C%20LocalStack-orange?logo=amazon-aws)](template.yaml)
 [![Code Hygiene](https://img.shields.io/badge/oxlint-0%20warnings-brightgreen)](frontend/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -14,7 +14,7 @@
 
 > 🏆 **AWS Open Source Eligibility (Triple-Qualified):**  
 > This project implements **three official AWS open-source tools** listed in the hackathon rubric (`wemakedevs.org/aws/env#credits`):
-> 1. **AWS Strands Agents SDK** (`strands-agents`): Autonomous multi-tool air health reasoning agent (*Category: Agents and AI*).
+> 1. **AWS Strands Agents SDK** (`strands-agents`): Autonomous multi-tool air health reasoning agent (*Category: Agents and AI*), powered by Amazon Bedrock (Claude 3.5 Sonnet / Amazon Nova).
 > 2. **AWS SAM CLI** (`aws-sam-cli`): Serverless Application Model validated locally with `sam validate` (*Category: Serverless*).
 > 3. **LocalStack** (`docker-compose.localstack.yml`): Local emulation for Amazon DynamoDB and Amazon SNS (*Category: Serverless*).
 > 
@@ -45,7 +45,8 @@ Most air quality apps display a single, generic AQI number from a monitoring sta
 3. **🔥 Stubble Burning & Smoke Inflow Tracker:** Monitors 524 active agricultural farm fire clusters in Punjab & Haryana (NASA FIRMS satellite thermal data) correlated with meteorological boundary-layer wind vectors to compute NCR smoke arrival.
 4. **🏠 Indoor Air & HEPA Purifier CADR Countdown:** Models room area, volume ($m^3$), and window envelope leakage (*airtight*, *standard*, *poor*) to display a real-time countdown timer to safe air ($< 30\,\mu\text{g/m}^3$).
 5. **🏫 School & Vulnerable Group Advisory:** Provides operational safety directives for morning assembly, sports recess, classroom purifiers, and the **optimal mid-day ventilation window** (when solar heating breaks the morning ground inversion layer).
-6. **🔔 Automated Cloud Spike Alerts:** EventBridge-driven automated monitoring triggering instant SMS and email broadcasts via **Amazon SNS**.
+6. **🤖 Autonomous AI Air Advisor (AWS Strands SDK + Amazon Bedrock):** Autonomous agent reasoning across multi-pollutant telemetry, student activity protocols, and transit dosage models with registered tools.
+7. **🔔 Automated Cloud Spike Alerts:** EventBridge-driven automated monitoring triggering instant SMS and email broadcasts via **Amazon SNS**.
 
 ---
 
@@ -96,6 +97,7 @@ flowchart TD
 
 ## 🛠️ Tech Stack
 * **Backend:** Python 3.12, FastAPI, Uvicorn, HTTPX (Async), Pydantic v2, Mangum, Boto3, Pytest
+* **AI & Agent:** AWS Strands Agents SDK (`strands-agents`), Amazon Bedrock (Claude 3.5 Sonnet / Amazon Nova)
 * **Frontend:** React 19, Vite, Leaflet, Lucide Icons, Vitest, React Testing Library, JSDOM, Oxlint
 * **Cloud & DevOps:** AWS Lambda, API Gateway, DynamoDB, SNS, EventBridge, AWS Amplify, Docker, AWS SAM
 
@@ -114,7 +116,7 @@ uv venv --python 3.12 backend/.venv
 source backend/.venv/bin/activate
 uv pip install -r backend/requirements.txt
 
-# Run backend test suite (8/8 passing)
+# Run backend test suite (14/14 passing)
 pytest backend/tests/ -v
 
 # Start FastAPI server
@@ -127,7 +129,7 @@ Interactive API docs available at: `http://localhost:8000/docs`
 cd frontend
 pnpm install
 
-# Run frontend test suite (17/17 passing)
+# Run frontend test suite (39/39 passing across 9 test suites)
 pnpm test
 
 # Run code hygiene linter (0 errors, 0 warnings)
