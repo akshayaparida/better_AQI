@@ -123,6 +123,32 @@ This script is structured specifically for the YouTube demo video requirement (u
 | **1:55 - 2:35** | SAM template on screen & LocalStack / Architecture | *"Behind the scenes, better_AQI is in the Air track and uses AWS Strands Agents, SAM CLI and LocalStack. It is built for Lambda with SAM, and tested locally on LocalStack. Here on screen is our SAM template—defining the FastAPI Lambda function with the Mangum ASGI adapter, DynamoDB subscription table, and SNS topic. We test our entire serverless pipeline locally with LocalStack with zero cloud bill."* |
 | **2:35 - 3:00** | Code repo, test suite, and closing | *"Our codebase is 100% open-source with 14/14 backend pytest tests, 39/39 frontend Vitest tests across 9 test suites, and automated AWS SAM Infrastructure as Code. Thank you, WeMakeDevs and AWS, for Environmental Hacks 2026!"* |
 
+### 🎙️ Quick Recording Teleprompter (Short & Crisp — ~2:30 Total)
+
+```text
+[0:00 - 0:25] INTRO & HOOK (Show Header & Live AQI badge)
+"Hello everyone! This is better_AQI, built for Track 01: Air in the AWS and WeMakeDevs Environmental Hacks. 
+In Indian cities, an AQI number from a station often kilometers away doesn't tell you how to protect your lungs today. 
+better_AQI turns raw sensor data into hyper-local, actionable health decisions."
+
+[0:25 - 0:55] CLEAN COMMUTE (Click Commute tab, change transit mode, click Google Maps)
+"Our Cleanest Commute Planner compares alternate GPS routes. 
+Whether you walk, cycle, or drive, taking the green corridor saves your lungs fine dust exposure—sparing you cigarette equivalents based on the Berkeley Earth standard—with 1-click live navigation in Google Maps."
+
+[0:55 - 1:30] SCHOOL, STUBBLE & PURIFIER (Scroll to School Card, Stubble Map, and Purifier)
+"For schools, our advisory translates live air into operational directives: assembly rules, sports restrictions, and mid-day ventilation windows. 
+We track active stubble burning farm fires using NASA satellite thermal data with wind vectors, and calculate exact purifier countdown timers to reach safe indoor air."
+
+[1:30 - 2:05] AI AIR ADVISOR (Click AI Advisor tab, click a suggested pill, show response)
+"In our AI Advisor, the open-source AWS Strands Agents SDK runs autonomous multi-tool reasoning powered by Amazon Bedrock. 
+It pulls live telemetry, evaluates school protocols, and calculates commute dosage in real time."
+
+[2:05 - 2:30] AWS SAM & TEST SUITES (Show template.yaml & terminal with 14/39 passing tests)
+"better_AQI is built for Lambda with SAM and tested locally on LocalStack with zero cloud bill. 
+Our open-source repo has 14/14 passing pytest tests and 39/39 passing Vitest tests. 
+Thank you WeMakeDevs and AWS!"
+```
+
 ---
 
 ## 🚀 How to Run Locally
