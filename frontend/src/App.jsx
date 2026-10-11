@@ -10,7 +10,7 @@ import StubblePanel from './components/StubblePanel';
 import CitizenResponsibilityCard from './components/CitizenResponsibilityCard';
 import AlertModal from './components/AlertModal';
 import EmergencySirenBanner from './components/EmergencySirenBanner';
-import { startContinuousHighRiseSiren } from './utils/sirenAudio';
+import { startContinuousHighRiseSiren, stopAlertSiren } from './utils/sirenAudio';
 import { Gauge, HeartHandshake } from 'lucide-react';
 
 function getHubsForCity(city) {
@@ -257,23 +257,44 @@ export default function App() {
     loadCommute();
   }, [selectedTransitMode, originHubId, destinationHubId, customOrigin, customDestination, userLocation, activeCity]);
 
-  // Continuous High-Rise Siren Auto-Trigger on Hazardous AQI breach
+  // Auto-Siren Mode (Enabled by default, persists in localStorage)
+  const [autoSirenEnabled, setAutoSirenEnabled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('auto_siren_enabled');
+      return saved === null ? true : saved === 'true';
+    }
+    return true;
+  });
+
+  const toggleAutoSiren = () => {
+    setAutoSirenEnabled((prev) => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('auto_siren_enabled', next ? 'true' : 'false');
+      }
+      if (!next) {
+        stopAlertSiren();
+      }
+      return next;
+    });
+  };
+
+  // Continuous High-Rise Siren Auto-Trigger on Location Change or Hazardous AQI breach
   useEffect(() => {
     if (aqiData?.current?.pm2_5 && typeof window !== 'undefined') {
-      const isAutoArmed = localStorage.getItem('auto_siren_enabled') === 'true';
-      const autoThreshold = Number(localStorage.getItem('auto_siren_threshold') || '90');
-      if (isAutoArmed && aqiData.current.pm2_5 >= autoThreshold) {
+      const autoThreshold = Number(localStorage.getItem('auto_siren_threshold') || '60');
+      if (autoSirenEnabled && aqiData.current.pm2_5 >= autoThreshold) {
         startContinuousHighRiseSiren();
       }
     }
-  }, [aqiData]);
+  }, [aqiData, autoSirenEnabled]);
 
   const current = aqiData?.current;
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-primary)' }}>
       {/* High-Rise Emergency Alarm Persistent Banner */}
-      <EmergencySirenBanner />
+      <EmergencySirenBanner activeCity={activeCity} currentPm25={current?.pm2_5} />
 
       {/* Navigation */}
       <Navbar
@@ -283,6 +304,8 @@ export default function App() {
         userLocation={userLocation}
         isDetectingLocation={isDetectingLocation}
         onDetectLocation={handleDetectLocation}
+        autoSirenEnabled={autoSirenEnabled}
+        onToggleAutoSiren={toggleAutoSiren}
       />
 
       {/* Main Workspace Layout */}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wind, Bell, Shield, Navigation, Home, Flame, LocateFixed, Loader2, HeartHandshake } from 'lucide-react';
+import { Wind, Bell, Shield, Navigation, Home, Flame, LocateFixed, Loader2, HeartHandshake, Volume2, VolumeX } from 'lucide-react';
 
 export default function Navbar({
   activeTab,
@@ -8,6 +8,8 @@ export default function Navbar({
   userLocation,
   isDetectingLocation,
   onDetectLocation,
+  autoSirenEnabled,
+  onToggleAutoSiren,
 }) {
   const tabs = [
     { id: 'overview', label: 'Live AQI & Map', icon: Wind },
@@ -115,6 +117,39 @@ export default function Navbar({
             </>
           )}
         </button>
+
+        {/* Auto-Siren Mode Toggle */}
+        {onToggleAutoSiren && (
+          <button
+            type="button"
+            onClick={onToggleAutoSiren}
+            id="btn-auto-siren"
+            className="btn-secondary"
+            title="Automatic high-rise emergency siren when viewing or switching to a location with hazardous PM2.5"
+            style={{
+              padding: '8px 12px',
+              fontSize: '0.82rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              border: autoSirenEnabled ? '1px solid rgba(239, 68, 68, 0.6)' : undefined,
+              color: autoSirenEnabled ? '#F87171' : undefined,
+              background: autoSirenEnabled ? 'rgba(239, 68, 68, 0.15)' : undefined,
+            }}
+          >
+            {autoSirenEnabled ? (
+              <>
+                <Volume2 size={15} color="#EF4444" />
+                <span>Auto-Alarm: ON</span>
+              </>
+            ) : (
+              <>
+                <VolumeX size={15} />
+                <span>Auto-Alarm: OFF</span>
+              </>
+            )}
+          </button>
+        )}
 
         {/* Cloud Alert Button */}
         <button

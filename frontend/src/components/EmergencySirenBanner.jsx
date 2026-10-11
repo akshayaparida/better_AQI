@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { VolumeX, AlertTriangle } from 'lucide-react';
 import { isSirenActive, stopAlertSiren } from '../utils/sirenAudio';
 
-export default function EmergencySirenBanner() {
+export default function EmergencySirenBanner({ activeCity, currentPm25 }) {
   const [active, setActive] = useState(isSirenActive);
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function EmergencySirenBanner() {
             🚨 EMERGENCY AIR POLLUTION ALARM ACTIVE!
           </strong>
           <span style={{ fontSize: '0.8rem', opacity: 0.9, marginLeft: '8px', display: 'inline-block' }}>
-            Particulate levels exceed safety threshold. Close windows & turn on HEPA filtration.
+            {activeCity ? `PM2.5 in ${activeCity.name} is ${currentPm25 ? `${currentPm25} µg/m³` : 'hazardous'}.` : 'Hazardous particulate levels detected.'} Close windows & turn on HEPA filtration.
           </span>
         </div>
       </div>
