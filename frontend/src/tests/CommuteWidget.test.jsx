@@ -44,7 +44,8 @@ describe('CommuteWidget Component', () => {
   it('displays cigarette savings comparison banner', () => {
     render(<CommuteWidget commuteData={mockCommuteData} onModeChange={vi.fn()} selectedMode="cycling" />);
 
-    expect(screen.getByText(/0.36 passively smoked cigarettes/i)).toBeInTheDocument();
+    expect(screen.getByText(/Spares your lungs from inhaling the equivalent of/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/0.36 cigarettes/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it('triggers onModeChange callback when user selects a different transit mode', () => {

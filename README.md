@@ -12,13 +12,11 @@
 
 ---
 
-> 🏆 **AWS Open Source Eligibility (Triple-Qualified):**  
-> This project implements **three official AWS open-source tools** listed in the hackathon rubric (`wemakedevs.org/aws/env#credits`):
-> 1. **AWS Strands Agents SDK** (`strands-agents`): Autonomous multi-tool air health reasoning agent (*Category: Agents and AI*), powered by Amazon Bedrock (Claude 3.5 Sonnet / Amazon Nova).
-> 2. **AWS SAM CLI** (`aws-sam-cli`): Serverless Application Model validated locally with `sam validate` (*Category: Serverless*).
-> 3. **LocalStack** (`docker-compose.localstack.yml`): Local emulation for Amazon DynamoDB and Amazon SNS (*Category: Serverless*).
-> 
-> *Fully qualifies under "BUILD IT: Open source, on your machine (No AWS account, no card, no bill)".*
+> 🏆 **Track & AWS Open Source Integration:**  
+> **better_AQI is in the Air track and uses AWS Strands Agents, SAM CLI and LocalStack.**  
+> - **AWS Strands Agents SDK** (`strands-agents`): Autonomous multi-tool air health reasoning agent with Amazon Bedrock.  
+> - **AWS SAM CLI** (`aws-sam-cli`): Built for Lambda with SAM, validated locally with `sam validate`.  
+> - **LocalStack** (`docker-compose.localstack.yml`): Tested locally on LocalStack for Amazon DynamoDB and Amazon SNS emulation.  
 
 ---
 
@@ -28,9 +26,9 @@
 ---
 
 ## 🌍 The Problem
-Most air quality apps display a single, generic AQI number from a monitoring station 15 km away. They fail to answer the critical daily questions faced by citizens, commuters, and school administrators:
+Most air quality apps display a single, generic AQI number from a monitoring station often kilometers away. They fail to answer the critical daily questions faced by citizens, commuters, and school administrators:
 - *“Which route between Connaught Place and Rohini exposes my lungs to the least toxic PM2.5?”*
-- *“How many passively smoked cigarettes does my commute exposure equate to?”*
+- *“How many cigarettes does my commute exposure equate to (Berkeley Earth rule)?”*
 - *“Is it safe for our school to hold outdoor morning sports or assembly today?”*
 - *“How many minutes must we run our classroom HEPA purifier to reach medical-grade safe air?”*
 
@@ -86,21 +84,22 @@ flowchart TD
     SNS -->|SMS / Email| User
 ```
 
-* **AWS Lambda (`BetterAqiApiFunction`):** Serverless FastAPI execution via `Mangum` ASGI adapter (Python 3.12).
-* **Amazon API Gateway (`BetterAqiHttpApi`):** HTTP API handling routing, TLS, and CORS.
-* **Amazon DynamoDB (`better_aqi_subscriptions`):** Low-latency serverless storage for alert preferences and thresholds.
-* **Amazon SNS (`better_aqi_spike_alerts`):** Immediate SMS and email fan-out on toxic pollution spikes.
-* **AWS EventBridge (`HourlyAirQualityCheckSchedule`):** Automated hourly schedule rule evaluating live air telemetry.
-* **AWS Amplify Hosting:** Automated continuous deployment for the React 19 frontend.
-* **AWS SAM (`template.yaml`):** Turn-key Infrastructure as Code (IaC).
+### Built for Lambda with SAM, Tested Locally on LocalStack
+* **AWS Lambda (`BetterAqiApiFunction`):** Built for serverless execution using Python 3.12 and the `Mangum` ASGI adapter in `template.yaml`.
+* **Amazon API Gateway (`BetterAqiHttpApi`):** Declaratively defined HTTP API handling routing, TLS, and CORS.
+* **Amazon DynamoDB (`better_aqi_subscriptions`):** Modeled in SAM, tested locally via LocalStack for subscriber persistence.
+* **Amazon SNS (`better_aqi_spike_alerts`):** Modeled in SAM, tested locally via LocalStack for spike alert fan-out.
+* **AWS EventBridge (`HourlyAirQualityCheckSchedule`):** Scheduled hourly rule defined in `template.yaml`.
+* **AWS SAM CLI (`template.yaml`):** Open-source IaC tool validating the serverless architecture (`sam validate`).
+* **LocalStack (`docker-compose.localstack.yml`):** Local cloud emulator used for zero-cost offline testing.
 
 ---
 
 ## 🛠️ Tech Stack
 * **Backend:** Python 3.12, FastAPI, Uvicorn, HTTPX (Async), Pydantic v2, Mangum, Boto3, Pytest
-* **AI & Agent:** AWS Strands Agents SDK (`strands-agents`), Amazon Bedrock (Claude 3.5 Sonnet / Amazon Nova)
+* **AI & Agent:** AWS Strands Agents SDK (`strands-agents`), Amazon Bedrock
 * **Frontend:** React 19, Vite, Leaflet, Lucide Icons, Vitest, React Testing Library, JSDOM, Oxlint
-* **Cloud & DevOps:** AWS Lambda, API Gateway, DynamoDB, SNS, EventBridge, AWS Amplify, Docker, AWS SAM
+* **Cloud & DevOps:** AWS Lambda, API Gateway, DynamoDB, SNS, EventBridge, LocalStack, Docker, AWS SAM CLI
 
 ---
 

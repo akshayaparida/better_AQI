@@ -962,7 +962,7 @@ export default function CommuteWidget({
               <span>{analysis.summary.replace(/toxic PM2\.5 exposure/i, 'fine dust (PM2.5) exposure')}</span>
             </h4>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
-              Health benefit: Spares your lungs from inhaling the equivalent of <b>{analysis.cigarettes_saved} passively smoked cigarettes</b>.
+              Health benefit: Spares your lungs from inhaling the equivalent of <b>{analysis.cigarettes_saved} cigarettes</b> (Berkeley Earth rule: ~22 µg PM2.5).
             </p>
           </div>
         </div>

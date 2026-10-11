@@ -9,13 +9,13 @@
 ---
 
 ## 📌 Executive Summary
-In Indian metropolitan hubs like Delhi NCR, citizens and schools are inundated with a single, abstract Air Quality Index (AQI) number recorded at a distant monitoring tower 15 km away. This metric fails to answer everyday life-or-death decisions:
+In Indian metropolitan hubs like Delhi NCR, citizens and schools are inundated with a single, abstract Air Quality Index (AQI) number recorded at a distant monitoring tower often kilometers away. This metric fails to answer everyday life-or-death decisions:
 - *"Which commute route exposes my lungs to the least toxic particulate matter?"*
 - *"Should our school conduct outdoor morning assembly or cancel sports recess today?"*
 - *"When will the winter stubble smoke inversion plume reach our neighborhood?"*
 - *"How many minutes must we run our classroom HEPA purifier to reach medical-grade safe air?"*
 
-**`better_AQI`** is an intelligent, hyper-local air intelligence platform built on **AWS Serverless Architecture**. It bridges the gap between raw environmental sensors, NASA satellite thermal telemetry, and actionable human safety protocols.
+**`better_AQI` is in the Air track and uses AWS Strands Agents, SAM CLI and LocalStack.** It is built for Lambda with SAM, and tested locally on LocalStack. It bridges the gap between raw environmental sensors, NASA satellite thermal telemetry, and actionable human safety protocols.
 
 ---
 
@@ -26,8 +26,8 @@ In Indian metropolitan hubs like Delhi NCR, citizens and schools are inundated w
 | Rubric Tag | Problem Solved | Engineering Implementation & Scientific Model |
 |---|---|---|
 | **1. AQI** | Generic numbers lack multi-pollutant context and actionable severity. | Integrates real-time Open-Meteo multi-pollutant telemetry (PM2.5, PM10, NO₂, O₃, SO₂, CO) calibrated to **Indian Central Pollution Control Board (CPCB) NAAQS 6-tier breakpoints** (Good, Satisfactory, Moderate, Poor, Very Poor, Severe). Includes a regional circuit-breaker fallback for high reliability. |
-| **2. Pollution Exposure** | Commuters breathe heavily along traffic corridors without knowing the cumulative toxic dosage. | **Cleanest Commute Engine:** Compares alternate GPS routes (e.g., *Ridge Green Belt* vs. *Arterial Highway*). Ingests transit modes (**Bicycle, Two-Wheeler, Car with AC Cabin Filter, Walking**) with mode-specific minute respiration rates ($L/\text{min}$) and vehicle filtration efficiencies to calculate exact inhaled PM2.5 ($\mu\text{g}$) and **passively smoked cigarette equivalents** ($22\,\mu\text{g} \text{ PM2.5} \approx 1 \text{ cigarette}$). |
-| **3. Stubble Burning** | Seasonal post-monsoon farm fires trigger hazardous smog emergencies across North India. | **Active Farm Fire Tracking:** Visualizes 524 active agricultural fire hotspots across Punjab & Haryana (NASA FIRMS satellite thermal data). Correlates fire clusters with real-time boundary-layer wind vectors (speed, direction, cardinal heading) to model downwind smoke transport and NCR contribution ($28\% - 36\%$). |
+| **2. Pollution Exposure** | Commuters breathe heavily along traffic corridors without knowing the cumulative toxic dosage. | **Cleanest Commute Engine:** Compares alternate GPS routes (e.g., *Ridge Green Belt* vs. *Arterial Highway*). Ingests transit modes (**Bicycle, Two-Wheeler, Car with AC Cabin Filter, Walking**) with mode-specific minute respiration rates ($L/\text{min}$) and vehicle filtration efficiencies to calculate exact inhaled PM2.5 ($\mu\text{g}$) and **cigarette equivalents** based on the Berkeley Earth standard ($22\,\mu\text{g} \text{ PM2.5} \approx 1 \text{ cigarette}$). |
+| **3. Stubble Burning** | Seasonal post-monsoon farm fires trigger hazardous smog emergencies across North India. | **Active Farm Fire Tracking:** Visualizes active agricultural fire hotspots across Punjab & Haryana (NASA satellite thermal data from NASA FIRMS). Correlates fire clusters with real-time boundary-layer wind vectors (speed, direction, cardinal heading) to model downwind smoke transport and NCR contribution ($28\% - 36\%$). |
 | **4. Indoor Air** | People run air purifiers blindly without knowing if their room is actually safe. | **Indoor Infiltration & CADR Countdown Calculator:** Models room volume ($m^3$) and building envelope air leakage (*airtight*, *standard*, *poor*). Calculates effective Air Changes per Hour (ACH) and computes a precise **minutes-to-clean countdown timer** to reach the WHO/CPCB safe baseline ($< 30\,\mu\text{g/m}^3$). |
 | **5. School Safety on Bad Days** | School administrators lack clear operational guidance for assemblies and sports recess. | **School & Student Air Advisory Protocol:** Translates live chemical levels into 4 actionable operational directives: (1) Morning Assembly (Allowed / Caution / Suspended), (2) Outdoor Sports Recess (Normal / Restricted / Indoors), (3) Classroom Purifier Fan Speed (Standby / Medium / Turbo), and (4) **Optimal Mid-Day Ventilation Window** (identifying solar heating inversion break periods). |
 | **6. Citizen Responsibility & Good AQI Maintenance** | Citizens feel powerless about air pollution and lack actionable community habits. | **Citizen Action & Clean Air Stewardship Dashboard:** Interactive daily civic pledge, habit checklist (zero-idling, zero open burning, moist dust control, energy conservation), personal commute shift savings calculator (estimating PM2.5 & CO₂ prevented), 5 community pillars, and direct municipal grievance reporting hotlines. |
@@ -71,33 +71,29 @@ flowchart TD
     SNS -->|SMS / Email| User
 ```
 
-### AWS Services Breakdown
+### Built for Lambda with SAM, Tested Locally on LocalStack
 1. **AWS Lambda (`BetterAqiApiFunction`):**
-   * Serverless execution using Python 3.12 and the `Mangum` ASGI adapter.
+   * Built for serverless execution using Python 3.12 and the `Mangum` ASGI adapter in `template.yaml`.
    * Scales instantly from 0 to thousands of requests with zero idle server cost on the AWS Free Tier.
 2. **Amazon API Gateway (`BetterAqiHttpApi`):**
-   * Low-latency HTTP API handling global CORS, TLS termination, and traffic routing.
+   * Low-latency HTTP API handling global CORS, TLS termination, and traffic routing defined in `template.yaml`.
 3. **Amazon DynamoDB (`better_aqi_subscriptions`):**
-   * Serverless NoSQL database storing user notification preferences, GPS coordinates, and personalized PM2.5 spike thresholds with on-demand capacity.
+   * Modeled in SAM, tested locally via LocalStack for subscriber preferences, GPS coordinates, and threshold persistence.
 4. **Amazon SNS (`better_aqi_spike_alerts`):**
-   * Multi-protocol notification engine fanning out instant SMS and email spike alerts when air crosses hazardous limits.
+   * Modeled in SAM, tested locally via LocalStack for instant SMS and email spike alert fan-out.
 5. **AWS EventBridge (`HourlyAirQualityCheckSchedule`):**
-   * Scheduled event rule triggering the Lambda function once every hour to evaluate live telemetry against subscriber alert thresholds.
-6. **AWS Amplify Hosting:**
-   * Global CI/CD hosting pipeline with fast CDN edge distribution for the React 19 frontend.
-7. **AWS SAM CLI (`template.yaml`):**
+   * Scheduled event rule defined in `template.yaml` triggering Lambda once every hour to evaluate live telemetry against subscriber alert thresholds.
+6. **AWS SAM CLI (`template.yaml`):**
    * Official **AWS Open Source Tool** (Apache 2.0 licensed, `aws/aws-sam-cli`).
    * Provides declarative Infrastructure as Code (IaC) enabling 1-command reproducible cloud deployments and local validation via `sam validate`.
-   * **Hackathon Open Source Track Qualification:** Directly satisfies the official WeMakeDevs & AWS Environmental Hacks rule: *"Build it open source on your machine (No AWS account, no card, no bill) — Serverless: SAM CLI"*.
-8. **AWS Boto3 SDK (`backend/services/alert_service.py`):**
-   * Official open-source AWS SDK for Python used for Amazon SNS alert dispatch and DynamoDB subscription persistence.
-9. **AWS Strands Agents SDK (`backend/services/strands_agent_service.py`):**
-   * Official AWS Open-Source AI Agent framework (`strands-agents`).
-   * Orchestrates multi-tool reasoning (`check_live_air_quality`, `evaluate_school_safety`, `calculate_commute_inhalation`) to produce synthesized health and route advisories.
-   * **Hackathon Track Qualification:** Directly satisfies the rubric's *"Agents and AI — Strands Agents SDK"* open-source category.
-10. **LocalStack Cloud Emulation (`docker-compose.localstack.yml`):**
-   * Official open-source AWS emulator listed under *"Serverless — LocalStack"*.
+7. **LocalStack Cloud Emulation (`docker-compose.localstack.yml`):**
+   * Official open-source AWS emulator listed under Serverless tooling.
    * Enables local emulation of Amazon DynamoDB and Amazon SNS with zero cloud costs.
+8. **AWS Strands Agents SDK (`backend/services/strands_agent_service.py`):**
+   * Official AWS Open-Source AI Agent framework (`strands-agents`).
+   * Powered by Amazon Bedrock; orchestrates multi-tool reasoning (`check_live_air_quality`, `evaluate_school_safety`, `calculate_commute_inhalation`) to produce synthesized health and route advisories.
+9. **AWS Boto3 SDK (`backend/services/alert_service.py`):**
+   * Official open-source AWS SDK for Python used for Amazon SNS alert dispatch and DynamoDB subscription persistence.
 
 ---
 
@@ -121,11 +117,11 @@ This script is structured specifically for the YouTube demo video requirement (u
 
 | Timestamp | Visual Display | Spoken Script / Voiceover |
 |---|---|---|
-| **0:00 - 0:30** | Title slide, real-world Delhi smog footage / app header | *"Hello! Welcome to better_AQI. In Indian cities, checking the AQI usually gives you a single number from a station 15 km away. But when you step outside, it doesn’t tell you which route protects your lungs, whether your child's school should hold morning sports, or how long to run your indoor air purifier. We built better_AQI to turn complex multi-pollutant telemetry into actionable human decisions."* |
-| **0:30 - 1:10** | Live Demo: Map & Cleanest Commute Planner | *"Here is our live dashboard. In our Cleanest Commute Planner, we compare alternate routes with worldwide geocoding. You can select your transit mode—Bicycle, Two-Wheeler, Car with AC cabin filter, or Walking. Taking the clean air corridor saves your lungs 31% toxic exposure, sparing you the equivalent of 0.36 passively smoked cigarettes, with one-click live turn-by-turn navigation in Google Maps."* |
-| **1:10 - 1:45** | Live Demo: School Advisory, Stubble Fires & Purifier CADR | *"For schools, our advisory card automatically translates CPCB air levels into clear operational directives: suspended assemblies, indoor sports, and the optimal mid-day ventilation window when solar heat breaks the ground inversion layer. We also track 524 active stubble burning farm fires in Punjab and Haryana with wind vectors, and calculate indoor HEPA purifier countdown timers to reach safe air."* |
-| **1:45 - 2:25** | Live Demo: AI Air Advisor (AWS Strands SDK) & AWS Cloud Architecture | *"Next is our AI Air Advisor, powered by the official AWS Strands Agents SDK and Amazon Bedrock with Claude 3.5 Sonnet. The agent autonomously coordinates multi-pollutant telemetry, school safety directives, and commute dosage tools. In the cloud, better_AQI runs on AWS Lambda via Mangum behind Amazon API Gateway, DynamoDB for subscriptions, and EventBridge triggering automated SMS/email alerts via Amazon SNS."* |
-| **2:25 - 3:00** | Code repo, test suite, and closing | *"Our project triple-qualifies for the AWS Open Source track with the Strands Agents SDK, AWS SAM CLI, and LocalStack. It features 14/14 backend Pytest tests, 39/39 frontend Vitest tests, and zero linter warnings. All open-source on GitHub. Thank you, WeMakeDevs and AWS, for Environmental Hacks 2026!"* |
+| **0:00 - 0:35** | Title slide, real-world Delhi smog footage / app header | *"Hello! Welcome to better_AQI. In Indian cities, checking the AQI usually gives you a single number from a station often kilometers away. But when you step outside, it doesn’t tell you which route protects your lungs, whether your child's school should cancel outdoor assembly, or how to operate your indoor purifier. We built better_AQI to turn complex chemical data into actionable human decisions."* |
+| **0:35 - 1:15** | Live Demo: Map & Cleanest Commute Planner | *"Here is our interactive dashboard. In our Cleanest Commute Planner, we compare alternate routes with worldwide geocoding. You can select your transit mode—Bicycle, Two-Wheeler, Car with AC filter, or Walking. Taking the clean air corridor reduces toxic fine dust exposure (matching our live route savings percentage, e.g., 31%), sparing your lungs the equivalent of cigarettes based on the Berkeley Earth standard (~22 µg PM2.5 per cigarette), with one-click live turn-by-turn navigation in Google Maps."* |
+| **1:15 - 1:55** | Live Demo: School Advisory, Stubble Fires, Purifier & Citizen Action | *"For schools, our advisory card automatically translates air levels into clear operational directives: brief assemblies, restricted sports, and optimal mid-day ventilation windows. We also track active stubble burning farm fires in Punjab and Haryana using NASA satellite thermal data with wind vectors, and model indoor air purifiers with countdown timers to clean air. In our AI tab, our AWS Strands Agent powered by Amazon Bedrock reasons across these live tools."* |
+| **1:55 - 2:35** | SAM template on screen & LocalStack / Architecture | *"Behind the scenes, better_AQI is in the Air track and uses AWS Strands Agents, SAM CLI and LocalStack. It is built for Lambda with SAM, and tested locally on LocalStack. Here on screen is our SAM template—defining the FastAPI Lambda function with the Mangum ASGI adapter, DynamoDB subscription table, and SNS topic. We test our entire serverless pipeline locally with LocalStack with zero cloud bill."* |
+| **2:35 - 3:00** | Code repo, test suite, and closing | *"Our codebase is 100% open-source with 14/14 backend pytest tests, 39/39 frontend Vitest tests across 9 test suites, and automated AWS SAM Infrastructure as Code. Thank you, WeMakeDevs and AWS, for Environmental Hacks 2026!"* |
 
 ---
 

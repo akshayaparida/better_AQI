@@ -169,8 +169,8 @@ export default function AiAirAdvisorCard({ activeCity }) {
           }}>
             <Sparkles size={16} color="#A78BFA" />
             <div>
-              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.68rem' }}>FOUNDATION LLM</span>
-              <strong style={{ color: '#A78BFA' }}>Amazon Bedrock (Claude 3.5 / Nova)</strong>
+              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.68rem' }}>AI FOUNDATION</span>
+              <strong style={{ color: '#A78BFA' }}>Amazon Bedrock</strong>
             </div>
           </div>
         </div>

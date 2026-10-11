@@ -123,7 +123,7 @@ def get_agent_capabilities() -> Dict[str, Any]:
         "framework": "AWS Strands Agents SDK",
         "package": "strands-agents (open source)",
         "agent_name": "better_AQI AirIntelligenceAgent",
-        "foundation_model": os.getenv("STRANDS_MODEL_ID", "Amazon Bedrock (Claude 3.5 Sonnet / Amazon Nova)"),
+        "foundation_model": os.getenv("STRANDS_MODEL_ID", "Amazon Bedrock"),
         "registered_tools": [
             {
                 "name": t.tool_spec["name"],
@@ -177,7 +177,7 @@ async def consult_air_agent(
         synthesis = (
             f"Traveling {dist:.1f} km via {mode} through {pm2_5:.1f} µg/m³ PM2.5 results in "
             f"{commute_result['inhaled_pm25_ug']:.1f} µg of toxic particulate inhalation, "
-            f"equivalent to passively smoking {commute_result['cigarette_equivalent']:.2f} cigarettes. "
+            f"equivalent to smoking {commute_result['cigarette_equivalent']:.2f} cigarettes (Berkeley Earth equivalent). "
             f"Recommendation: {commute_result['health_impact']}."
         )
     else:
@@ -192,7 +192,7 @@ async def consult_air_agent(
     return {
         "status": "success",
         "agent": "AWS Strands Agents SDK (strands-agents)",
-        "foundation_model": os.getenv("STRANDS_MODEL_ID", "Amazon Bedrock (Claude 3.5 Sonnet / Amazon Nova)"),
+        "foundation_model": os.getenv("STRANDS_MODEL_ID", "Amazon Bedrock"),
         "prompt": prompt,
         "primary_focus": primary_focus,
         "synthesis": synthesis,
