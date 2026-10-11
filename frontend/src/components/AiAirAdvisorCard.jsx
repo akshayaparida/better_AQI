@@ -137,21 +137,41 @@ export default function AiAirAdvisorCard({ activeCity }) {
           </div>
         </div>
 
-        {/* Live Framework Introspection Pill */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '8px 14px',
-          borderRadius: '10px',
-          background: 'rgba(59, 130, 246, 0.1)',
-          border: '1px solid rgba(59, 130, 246, 0.3)',
-          fontSize: '0.78rem',
-        }}>
-          <Bot size={16} color="#60A5FA" />
-          <div>
-            <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.68rem' }}>FRAMEWORK</span>
-            <strong style={{ color: '#60A5FA' }}>AWS strands-agents</strong>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          {/* Live Framework Introspection Pill */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 14px',
+            borderRadius: '10px',
+            background: 'rgba(59, 130, 246, 0.1)',
+            border: '1px solid rgba(59, 130, 246, 0.3)',
+            fontSize: '0.78rem',
+          }}>
+            <Bot size={16} color="#60A5FA" />
+            <div>
+              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.68rem' }}>FRAMEWORK</span>
+              <strong style={{ color: '#60A5FA' }}>AWS strands-agents</strong>
+            </div>
+          </div>
+
+          {/* Foundation LLM Pill */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 14px',
+            borderRadius: '10px',
+            background: 'rgba(139, 92, 246, 0.12)',
+            border: '1px solid rgba(139, 92, 246, 0.35)',
+            fontSize: '0.78rem',
+          }}>
+            <Sparkles size={16} color="#A78BFA" />
+            <div>
+              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.68rem' }}>FOUNDATION LLM</span>
+              <strong style={{ color: '#A78BFA' }}>Amazon Bedrock (Claude 3.5 / Nova)</strong>
+            </div>
           </div>
         </div>
       </div>
