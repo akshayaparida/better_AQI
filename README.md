@@ -46,7 +46,8 @@ Most air quality apps display a single, generic AQI number from a monitoring sta
 4. **🏠 Indoor Air & HEPA Purifier CADR Countdown:** Models room area, volume ($m^3$), and window envelope leakage (*airtight*, *standard*, *poor*) to display a real-time countdown timer to safe air ($< 30\,\mu\text{g/m}^3$).
 5. **🏫 School & Vulnerable Group Advisory:** Provides operational safety directives for morning assembly, sports recess, classroom purifiers, and the **optimal mid-day ventilation window** (when solar heating breaks the morning ground inversion layer).
 6. **🤖 Autonomous AI Air Advisor (AWS Strands SDK + Amazon Bedrock):** Autonomous agent reasoning across multi-pollutant telemetry, student activity protocols, and transit dosage models with registered tools.
-7. **🔔 Automated Cloud Spike Alerts:** EventBridge-driven automated monitoring triggering instant SMS and email broadcasts via **Amazon SNS**.
+7. **🌱 Citizen Responsibility & Civic Action Pledge:** Interactive daily civic pledge, habit checklist (zero-idling, dust suppression), commute shift emission savings calculator, and municipal grievance hotlines.
+8. **🔔 Automated Cloud Spike Alerts:** EventBridge-driven automated monitoring triggering instant SMS and email broadcasts via **Amazon SNS**.
 
 ---
 
