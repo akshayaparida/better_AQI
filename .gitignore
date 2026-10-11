@@ -55,3 +55,6 @@ Thumbs.db
 # AWS SAM & Serverless build artifacts
 .aws-sam/
 .serverless/
+
+# Local Video Artifacts
+artifacts_video/
