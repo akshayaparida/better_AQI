@@ -10,7 +10,7 @@ import StubblePanel from './components/StubblePanel';
 import CitizenResponsibilityCard from './components/CitizenResponsibilityCard';
 import AlertModal from './components/AlertModal';
 import EmergencySirenBanner from './components/EmergencySirenBanner';
-import { startContinuousHighRiseSiren, stopAlertSiren } from './utils/sirenAudio';
+import { startContinuousHighRiseSiren, stopAlertSiren, unlockAudioContext } from './utils/sirenAudio';
 import { Gauge, HeartHandshake } from 'lucide-react';
 
 function getHubsForCity(city) {
@@ -178,6 +178,11 @@ export default function App() {
 
   // Handle switching to a new world city
   const handleCitySelect = (city) => {
+    // 1. Immediately silence any active siren when switching to another place
+    stopAlertSiren();
+    // 2. Proactively unlock audio context inside direct user gesture
+    unlockAudioContext();
+
     setActiveCity(city);
     const hubs = getHubsForCity(city);
     const origin = hubs[0] || { id: 'downtown', name: `${city.name} Downtown`, lat: city.lat, lon: city.lon };
@@ -190,6 +195,8 @@ export default function App() {
 
   // Detect HTML5 Geolocation Position anywhere in the world
   const handleDetectLocation = () => {
+    stopAlertSiren();
+    unlockAudioContext();
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by your browser.');
       return;
@@ -281,10 +288,14 @@ export default function App() {
 
   // Continuous High-Rise Siren Auto-Trigger on Location Change or Hazardous AQI breach
   useEffect(() => {
-    if (aqiData?.current?.pm2_5 && typeof window !== 'undefined') {
+    if (typeof window !== 'undefined') {
       const autoThreshold = Number(localStorage.getItem('auto_siren_threshold') || '60');
-      if (autoSirenEnabled && aqiData.current.pm2_5 >= autoThreshold) {
+      const currentPm25 = aqiData?.current?.pm2_5;
+      if (autoSirenEnabled && currentPm25 !== undefined && currentPm25 >= autoThreshold) {
         startContinuousHighRiseSiren();
+      } else {
+        // Automatically stop the siren if the new location has safe air (< threshold) or Auto-Alarm is toggled OFF
+        stopAlertSiren();
       }
     }
   }, [aqiData, autoSirenEnabled]);
