@@ -54,24 +54,24 @@ Most air quality apps display a single, generic AQI number from a monitoring sta
 ```mermaid
 flowchart TD
     subgraph Clients["Frontend Layer"]
-        User["User Browser / Mobile"]
-        Amplify["AWS Amplify Hosting<br/>(React 19 + Leaflet + Vite)"]
+        User["User Browser and Mobile"]
+        Amplify["React 19 Frontend - Vite and Leaflet"]
     end
 
     subgraph Ingestion["Serverless API Layer"]
-        APIGW["Amazon API Gateway<br/>(HTTP API + CORS)"]
-        Lambda["AWS Lambda Function<br/>(Python 3.12 + FastAPI + Mangum)"]
+        APIGW["Amazon API Gateway HTTP API"]
+        Lambda["AWS Lambda Function - Python 3.12 and Mangum"]
     end
 
-    subgraph DataServices["AWS Storage & Notifications"]
-        DynamoDB[("Amazon DynamoDB<br/>Subscriptions Registry")]
-        SNS["Amazon SNS<br/>Spike Alert Topic"]
-        EventBridge["AWS EventBridge<br/>Hourly Schedule Rule"]
+    subgraph DataServices["AWS Storage and Notifications"]
+        DynamoDB["Amazon DynamoDB Subscriptions Table"]
+        SNS["Amazon SNS Spike Alert Topic"]
+        EventBridge["AWS EventBridge Hourly Rule"]
     end
 
     subgraph ExternalFeeds["Telemetry Data Sources"]
         OpenMeteo["Open-Meteo Air Quality API"]
-        NASA["NASA FIRMS Thermal Fire Clusters"]
+        NASA["NASA FIRMS Satellite Thermal Data"]
     end
 
     User --> Amplify
@@ -81,7 +81,7 @@ flowchart TD
     Lambda --> DynamoDB
     Lambda --> SNS
     EventBridge -.->|Hourly Trigger| Lambda
-    SNS -->|SMS / Email| User
+    SNS -->|SMS and Email| User
 ```
 
 ### Built for Lambda with SAM, Tested Locally on LocalStack
